@@ -166,31 +166,18 @@ async function showMembers(){const t=trip();if(!t)return alert('請先選擇旅�
 async function signIn(email,password){const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;authSession=data.session;currentUser=data.user;await afterLogin();}
 async function signUp(email,password){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
 
+
 async function afterLogin(){
   if(!currentUser)return;
-
- 
-  const {data:{session}} = await supabase.auth.getSession();
-
-  const claims = session?.access_token
-    ? JSON.parse(atob(session.access_token.split('.')[1]))
-    : null;
-
-  console.log('[JWT 診斷]', {
-    userId: session?.user?.id,
-    tokenSubject: claims?.sub,
-    tokenRole: claims?.role
-  });
-
-  console.log('[MY JOURNEYS] 登入者 ID：', currentUser.id);
-  console.log('[MY JOURNEYS] 登入者 Email：', currentUser.email);
 
   $('authGate').classList.add('hide');
   $('accountBtn').textContent='登出';
   $('accountBtn').title=currentUser.email||'';
+
   await loadCloud();
   await acceptInviteFromUrl();
 }
+
 
 $('authForm').onsubmit=async e=>{e.preventDefault();$('authMessage').textContent='登入中…';try{await signIn($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('signUpBtn').onclick=async()=>{if(!$('authEmail').value||!$('authPassword').value)return $('authMessage').textContent='請先輸入 Email 和密碼。';$('authMessage').textContent='建立帳號中…';try{await signUp($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
