@@ -167,16 +167,50 @@ async function signIn(email,password){const {data,error}=await supabaseClient.au
 async function signUp(email,password){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
 
 
+
 async function afterLogin(){
   if(!currentUser)return;
 
+  // JWT 診斷：只輸出必要資訊，不輸出 Token 本身
+  try {
+    const {data, error} = await supabase.auth.getSession();
+    const session = data?.session;
+    let claims = null;
+
+    if(session?.access_token){
+      const payload = session.access_token.split('.')[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+      const padded = payload.padEnd(
+        Math.ceil(payload.length / 4) * 4,
+        '='
+      );
+
+      claims = JSON.parse(atob(padded));
+    }
+
+    console.log('[AUTH DIAGNOSTIC]', {
+      appUserId: currentUser.id,
+      sessionExists: !!session,
+      sessionUserId: session?.user?.id ?? null,
+      tokenSub: claims?.sub ?? null,
+      tokenRole: claims?.role ?? null,
+      error: error?.message ?? null
+    });
+
+  } catch(err) {
+    console.warn('[AUTH DIAGNOSTIC ERROR]', err.message);
+  }
+
+  // 原本的登入流程，保持不變
   $('authGate').classList.add('hide');
   $('accountBtn').textContent='登出';
   $('accountBtn').title=currentUser.email||'';
-
   await loadCloud();
   await acceptInviteFromUrl();
 }
+
 
 
 $('authForm').onsubmit=async e=>{e.preventDefault();$('authMessage').textContent='登入中…';try{await signIn($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
