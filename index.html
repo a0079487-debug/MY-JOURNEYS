@@ -95,6 +95,7 @@ const STORAGE_BUCKET='trip-files';
 if(!SUPABASE_URL||!SUPABASE_ANON_KEY)console.error('請先設定 config.js 的 Supabase URL 與 Publishable key');
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser=null, authSession=null, realtimeChannel=null, cloudReady=false, saving=false;
+console.log("目前登入者 ID：", currentUser?.id);
 const KEY='my_journeys_website_v1';
 const $=id=>document.getElementById(id);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
@@ -164,7 +165,19 @@ async function acceptInviteFromUrl(){const token=new URLSearchParams(location.se
 async function showMembers(){const t=trip();if(!t)return alert('請先選擇旅程');const {data,error}=await supabaseClient.from('trip_members').select('user_id,role,joined_at').eq('trip_id',t.id);if(error)return alert(error.message);alert('目前成員\n'+(data||[]).map(m=>m.user_id+' · '+m.role).join('\n'))}
 async function signIn(email,password){const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;authSession=data.session;currentUser=data.user;await afterLogin();}
 async function signUp(email,password){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
-async function afterLogin(){if(!currentUser)return;$('authGate').classList.add('hide');$('accountBtn').textContent='登出';$('accountBtn').title=currentUser.email||'';await loadCloud();await acceptInviteFromUrl();}
+
+async function afterLogin(){
+  if(!currentUser)return;
+
+  console.log('[MY JOURNEYS] 登入者 ID：', currentUser.id);
+  console.log('[MY JOURNEYS] 登入者 Email：', currentUser.email);
+
+  $('authGate').classList.add('hide');
+  $('accountBtn').textContent='登出';
+  $('accountBtn').title=currentUser.email||'';
+  await loadCloud();
+  await acceptInviteFromUrl();
+}
 $('authForm').onsubmit=async e=>{e.preventDefault();$('authMessage').textContent='登入中…';try{await signIn($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('signUpBtn').onclick=async()=>{if(!$('authEmail').value||!$('authPassword').value)return $('authMessage').textContent='請先輸入 Email 和密碼。';$('authMessage').textContent='建立帳號中…';try{await signUp($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('accountBtn').onclick=async()=>{if(!currentUser)return;$('authGate').classList.remove('hide');$('authMessage').textContent='';await supabaseClient.auth.signOut();currentUser=null;authSession=null;cloudReady=false;state.trips=[];state.activeId=null;$('accountBtn').textContent='登入';setSyncStatus('未登入');render();};
