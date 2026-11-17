@@ -1,25 +1,20 @@
-# MY JOURNEYS 網站版
+MY JOURNEYS V2 - GitHub Pages + Supabase
 
-## 使用方式
-1. 解壓縮資料夾。
-2. 直接用 Chrome / Edge / Safari 開啟 `index.html` 即可使用。
-3. 資料會保存在目前瀏覽器的 localStorage；同一台裝置、同一個瀏覽器可持續使用。
-4. 首頁右上角「備份」可匯出 JSON；「還原」可匯入備份。
+檔案：
+- index.html：升級後網站（保留原有行程、航班、票券、預算、支出、行李功能）
+- config.js：填入 Supabase Project URL 與 Publishable key
+- supabase_upgrade.sql：在既有 Supabase 專案執行一次的升級 SQL
 
-## 已包含功能
-- 多趟旅行新增、編輯、刪除、切換
-- 出發倒數、旅行摘要
-- 多日行程、分類、選填時間、拖曳排序
-- Google Maps 目的地及景點搜尋連結
-- 交通類型行程及大眾運輸搜尋入口
-- 航班資料新增、編輯、刪除及 FlightAware 外部查詢
-- 票券、住宿、交通、餐廳預約、訂單、代碼、網址
-- 預算、支出分類與紀錄
-- 行李清單及完成進度
-- JSON 備份與還原
+設定步驟：
+1. 在 config.js 將 publishableKey 的提示文字換成你自己的 sb_publishable_... 金鑰。不要使用 sb_secret_ 或 service_role。
+2. Supabase SQL Editor 執行 supabase_upgrade.sql。此 SQL 建立私人 trip-files Storage bucket、附件權限，以及接受邀請的 RPC。
+3. 將 index.html、config.js、supabase_upgrade.sql 一起放在 GitHub repository 根目錄。
+4. GitHub Pages 發布後，在 Supabase Authentication > URL Configuration 設定 Site URL 為實際 GitHub Pages 網址，並將該網址加入 Redirect URLs。
+5. 使用者註冊時會收到 Email 驗證信。驗證完成後登入。
 
-## 目前限制
-- 沒有會員登入或雲端同步；資料只存在本機瀏覽器。
-- 地圖及航班狀態使用外部網站，不是內嵌地圖或即時航班 API。
-- 票券附件照片、PDF、QR Code 上傳尚未實作。
-- 若要正式公開給多人使用，需要後端資料庫、帳號驗證及部署。
+注意：
+- Supabase Storage 附件目前限制單檔 20MB，只允許 JPEG、PNG、WebP、GIF、PDF。
+- 附件存在私人 bucket，只有該趟旅程成員可讀取；上傳需 owner/editor 權限。
+- 舊版 localStorage 旅程在首次登入且雲端沒有旅程時，會詢問是否匯入。
+- 這版提供基本即時同步與邀請流程；上線前請先用兩個測試帳號測試權限。
+- 邀請連結為一次性、7 天有效，並綁定受邀 Email。
