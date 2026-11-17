@@ -107,7 +107,59 @@ function loadLocal(){try{const raw=JSON.parse(localStorage.getItem(KEY)||'{}');r
 function setSyncStatus(s){const el=$('syncStatus');if(el)el.textContent=s;}
 function tripToRow(t){const data={budget:Number(t.budget||0),itinerary:t.itinerary||[],flights:t.flights||[],documents:t.documents||[],expenses:t.expenses||[],packing:t.packing||[]};return {id:t.id,owner_id:t._ownerId||currentUser.id,title:t.title,destination:t.destination||'',start_date:t.startDate||null,end_date:t.endDate||null,data};}
 function rowToTrip(r){const d=r.data||{};return {id:r.id,_ownerId:r.owner_id,title:r.title||'',destination:r.destination||'',startDate:r.start_date||'',endDate:r.end_date||'',budget:Number(d.budget||0),itinerary:d.itinerary||[],flights:d.flights||[],documents:d.documents||[],expenses:d.expenses||[],packing:d.packing||[]};}
-async function save(){if(!currentUser||!cloudReady)return;const t=trip();if(!t)return;try{setSyncStatus('同步中…');const row=tripToRow(t);const {error}=await supabaseClient.from('trips').upsert(row,{onConflict:'id'});if(error)throw error;setSyncStatus('已同步');}catch(e){console.error(e);setSyncStatus('同步失敗');alert('雲端儲存失敗：'+e.message);}}
+async function save() {
+  if (!currentUser || !cloudReady) return;
+
+  const t = trip();
+  if (!t) return;
+
+  try {
+    setSyncStatus('同步中…');
+
+    const row = tripToRow(t);
+
+    if (t._ownerId) {
+      // 已存在的雲端旅程：Owner 或 Editor 更新資料
+      const { data, error } = await supabaseClient
+        .from('trips')
+        .update({
+          title: row.title,
+          destination: row.destination,
+          start_date: row.start_date,
+          end_date: row.end_date,
+          data: row.data
+        })
+        .eq('id', row.id)
+        .select('id')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!data) {
+        throw new Error('找不到可編輯的旅程，請確認目前帳號的權限。');
+      }
+
+    } else {
+      // 新旅程：新增資料，建立者成為 Owner
+      const { error } = await supabaseClient
+        .from('trips')
+        .insert(row);
+
+      if (error) throw error;
+
+      // 記錄原始擁有者，避免下次儲存時重複新增
+      t._ownerId = row.owner_id;
+    }
+
+    setSyncStatus('已同步');
+
+  } catch (e) {
+    console.error(e);
+    setSyncStatus('同步失敗');
+    alert('雲端儲存失敗：' + e.message);
+  }
+}
+
 async function loadCloud(){setSyncStatus('載入雲端…');const {data,error}=await supabaseClient.from('trips').select('*').order('created_at',{ascending:true});if(error)throw error;state.trips=(data||[]).map(rowToTrip);state.activeId=state.trips[0]?.id||null;cloudReady=true;const local=loadLocal();if(!state.trips.length&&local.trips.length&&confirm('偵測到這台裝置有舊版旅程資料，要將 '+local.trips.length+' 趟旅程匯入雲端嗎？')){for(const old of local.trips){const t={...blankTrip(old),id:crypto.randomUUID(),_ownerId:currentUser.id};const {error:ie}=await supabaseClient.from('trips').insert(tripToRow(t));if(ie)throw ie;}const {data:again,error:ae}=await supabaseClient.from('trips').select('*').order('created_at',{ascending:true});if(ae)throw ae;state.trips=(again||[]).map(rowToTrip);state.activeId=state.trips[0]?.id||null;}setSyncStatus('已同步');render();subscribeRealtime();}
 function subscribeRealtime(){if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);realtimeChannel=supabaseClient.channel('my-journeys-live').on('postgres_changes',{event:'*',schema:'public',table:'trips'},payload=>{const id=payload.new?.id||payload.old?.id;if(!id)return;if(payload.eventType==='DELETE'){state.trips=state.trips.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;}else{const incoming=rowToTrip(payload.new);const i=state.trips.findIndex(t=>t.id===id);if(i<0)state.trips.push(incoming);else state.trips[i]=incoming;if(!state.activeId)state.activeId=id;}render();setSyncStatus('已即時更新');}).subscribe();}
 const trip=()=>state.trips.find(t=>t.id===state.activeId)||null;
