@@ -7,7 +7,7 @@
 <title>MY JOURNEYS｜旅行管理</title>
 <style>
 :root{--forest:#303A35;--cream:#F5F1E8;--paper:#FFFCF6;--gold:#B9A17A;--muted:#77766E;--line:#E8DFD0;--red:#B85C50;--shadow:0 10px 30px #39352b0b}
-*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--forest);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;letter-spacing:.01em}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1160px;margin:auto;min-height:100vh;padding-bottom:94px}.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--line)}.brand{font-family:Georgia,serif;font-size:18px;letter-spacing:.2em}.brand small{display:block;font:10px sans-serif;color:var(--gold);letter-spacing:.25em;margin-top:5px}.top-actions{display:flex;gap:8px}.icon-btn,.btn{border:1px solid var(--line);background:var(--paper);color:var(--forest);border-radius:13px;padding:10px 14px}.btn.primary{background:var(--forest);color:var(--paper);border-color:var(--forest)}.btn.danger{color:var(--red)}.btn.small{padding:7px 10px;font-size:13px}.content{padding:28px}.eyebrow{font-size:10px;letter-spacing:.28em;color:var(--gold);font-weight:700}.hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin:12px 0 24px}.hero h1{font-size:clamp(28px,5vw,42px);margin:8px 0 4px;letter-spacing:-.04em}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-6{grid-column:span 6}.span-4{grid-column:span 4}.card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:var(--shadow)}.card h2,.card h3{margin:0 0 12px}.card h2{font-size:18px}.card h3{font-size:15px}.stat-row{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px}.stat strong{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}.progress{height:8px;background:var(--line);border-radius:20px;overflow:hidden;margin:12px 0}.progress i{display:block;height:100%;background:var(--gold);border-radius:20px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 12px}.section-head h2{font-size:19px;margin:0}.trip-list,.item-list{display:grid;gap:10px}.trip-row,.item-row{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);background:var(--paper);border-radius:16px}.trip-row{cursor:pointer}.trip-row.active{border-color:var(--gold);box-shadow:inset 3px 0 var(--gold)}.trip-row .grow,.item-main{flex:1;min-width:0}.trip-row strong,.item-main strong{display:block}.trip-row small,.item-main small{color:var(--muted)}.tabs{display:flex;gap:8px;overflow:auto;padding:0 28px 16px;border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;padding:10px 14px;color:var(--muted);white-space:nowrap;border-radius:12px}.tab.active{background:var(--forest);color:var(--paper)}.panel{display:none}.panel.active{display:block}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted)}input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#fffefa;color:var(--forest);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--gold)}textarea{min-height:76px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.day-strip{display:flex;gap:8px;overflow:auto;padding:4px 0 14px}.day-pill{min-width:76px;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--paper);color:var(--forest)}.day-pill.active{background:var(--forest);color:var(--paper)}.day-pill small{display:block;opacity:.7;font-size:10px}.item-row{align-items:flex-start}.drag{color:var(--gold);cursor:grab;padding:4px}.item-row.dragging{opacity:.4}.item-row.over{outline:2px dashed var(--gold)}.badge{display:inline-block;border-radius:20px;background:#eee8dc;color:#74654e;padding:4px 8px;font-size:11px}.item-actions{display:flex;gap:4px}.item-actions button{border:0;background:transparent;color:var(--muted);padding:6px}.empty{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}.bottom-nav{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#FFFCF6F2;backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:4px}.nav-btn{border:0;background:transparent;color:var(--muted);padding:8px 14px;border-radius:13px;min-width:68px}.nav-btn span{display:block;font-size:11px;margin-top:3px}.nav-btn.active{background:var(--forest);color:var(--paper)}.modal-backdrop{position:fixed;inset:0;background:#1d211f70;display:none;align-items:center;justify-content:center;padding:18px;z-index:30}.modal-backdrop.open{display:flex}.modal{width:min(600px,100%);max-height:90vh;overflow:auto;background:var(--paper);border-radius:22px;padding:22px;box-shadow:0 20px 70px #0003}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.modal-head h2{margin:0;font-size:20px}.close{border:0;background:transparent;font-size:24px;color:var(--muted)}.notice{font-size:12px;color:var(--muted);line-height:1.7;margin-top:14px}.segmented{display:flex;gap:6px;background:#eee9df;padding:5px;border-radius:14px;margin-bottom:16px}.segmented button{flex:1;border:0;background:transparent;border-radius:10px;padding:9px;color:var(--muted)}.segmented button.active{background:var(--paper);color:var(--forest);box-shadow:var(--shadow)}.check{width:18px;height:18px;accent-color:var(--forest)}.checked{text-decoration:line-through;color:var(--muted)}.link{color:var(--forest);text-decoration:underline;text-underline-offset:3px}.hide{display:none!important}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--forest);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;letter-spacing:.01em}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1160px;margin:auto;min-height:100vh;padding-bottom:94px}.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--line)}.brand{font-family:Georgia,serif;font-size:18px;letter-spacing:.2em}.brand small{display:block;font:10px sans-serif;color:var(--gold);letter-spacing:.25em;margin-top:5px}.top-actions{display:flex;gap:8px}.icon-btn,.btn{border:1px solid var(--line);background:var(--paper);color:var(--forest);border-radius:13px;padding:10px 14px}.btn.primary{background:var(--forest);color:var(--paper);border-color:var(--forest)}.btn.danger{color:var(--red)}.btn.small{padding:7px 10px;font-size:13px}.content{padding:28px}.eyebrow{font-size:10px;letter-spacing:.28em;color:var(--gold);font-weight:700}.hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin:12px 0 24px}.hero h1{font-size:clamp(28px,5vw,42px);margin:8px 0 4px;letter-spacing:-.04em}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-6{grid-column:span 6}.span-4{grid-column:span 4}.card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:var(--shadow)}.card h2,.card h3{margin:0 0 12px}.card h2{font-size:18px}.card h3{font-size:15px}.stat-row{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px}.stat strong{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}.progress{height:8px;background:var(--line);border-radius:20px;overflow:hidden;margin:12px 0}.progress i{display:block;height:100%;background:var(--gold);border-radius:20px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 12px}.section-head h2{font-size:19px;margin:0}.trip-list,.item-list{display:grid;gap:10px}.trip-row,.item-row{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);background:var(--paper);border-radius:16px}.trip-row{cursor:pointer}.trip-row.active{border-color:var(--gold);box-shadow:inset 3px 0 var(--gold)}.trip-row .grow,.item-main{flex:1;min-width:0}.trip-row strong,.item-main strong{display:block}.trip-row small,.item-main small{color:var(--muted)}.tabs{display:flex;gap:8px;overflow:auto;padding:0 28px 16px;border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;padding:10px 14px;color:var(--muted);white-space:nowrap;border-radius:12px}.tab.active{background:var(--forest);color:var(--paper)}.panel{display:none}.panel.active{display:block}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted)}input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#fffefa;color:var(--forest);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--gold)}textarea{min-height:76px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.day-strip{display:flex;gap:8px;overflow:auto;padding:4px 0 14px}.day-pill{min-width:76px;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--paper);color:var(--forest)}.day-pill.active{background:var(--forest);color:var(--paper)}.day-pill small{display:block;opacity:.7;font-size:10px}.item-row{align-items:flex-start}.drag{color:var(--gold);cursor:grab;padding:7px 9px;border:1px solid var(--line);border-radius:9px;flex:0 0 auto;user-select:none;touch-action:none}.drag:active{cursor:grabbing}.item-row.dragging{opacity:.45;transform:scale(.995)}.item-row.over{outline:2px dashed var(--gold);background:#f7f1e5}.item-actions .move-btn{font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fffefa;color:var(--forest)}.item-actions .move-btn:disabled{opacity:.3;cursor:not-allowed}.badge{display:inline-block;border-radius:20px;background:#eee8dc;color:#74654e;padding:4px 8px;font-size:11px}.item-actions{display:flex;gap:4px}.item-actions button{border:0;background:transparent;color:var(--muted);padding:6px}.empty{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}.bottom-nav{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#FFFCF6F2;backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:4px}.nav-btn{border:0;background:transparent;color:var(--muted);padding:8px 14px;border-radius:13px;min-width:68px}.nav-btn span{display:block;font-size:11px;margin-top:3px}.nav-btn.active{background:var(--forest);color:var(--paper)}.modal-backdrop{position:fixed;inset:0;background:#1d211f70;display:none;align-items:center;justify-content:center;padding:18px;z-index:30}.modal-backdrop.open{display:flex}.modal{width:min(600px,100%);max-height:90vh;overflow:auto;background:var(--paper);border-radius:22px;padding:22px;box-shadow:0 20px 70px #0003}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.modal-head h2{margin:0;font-size:20px}.close{border:0;background:transparent;font-size:24px;color:var(--muted)}.notice{font-size:12px;color:var(--muted);line-height:1.7;margin-top:14px}.segmented{display:flex;gap:6px;background:#eee9df;padding:5px;border-radius:14px;margin-bottom:16px}.segmented button{flex:1;border:0;background:transparent;border-radius:10px;padding:9px;color:var(--muted)}.segmented button.active{background:var(--paper);color:var(--forest);box-shadow:var(--shadow)}.check{width:18px;height:18px;accent-color:var(--forest)}.checked{text-decoration:line-through;color:var(--muted)}.link{color:var(--forest);text-decoration:underline;text-underline-offset:3px}.hide{display:none!important}
 .auth-gate{position:fixed;inset:0;z-index:100;background:var(--cream);display:flex;align-items:center;justify-content:center;padding:20px}.auth-card{width:min(440px,100%);background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow)}.auth-card h1{font-family:Georgia,serif;letter-spacing:.12em;font-size:24px}.auth-card .field{margin:12px 0}.auth-message{font-size:13px;line-height:1.6;color:var(--muted);min-height:22px}.account-label{font-size:11px;color:var(--muted);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-chip{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;margin-top:7px;background:#fffefa}.file-chip button{border:0;background:transparent;color:var(--forest);text-decoration:underline;cursor:pointer}.sync-indicator{font-size:11px;color:var(--muted);margin-right:6px}.member-panel{padding:12px;border:1px solid var(--line);border-radius:14px;margin-top:12px}.member-line{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}.member-line:last-child{border:0}
 @media(max-width:720px){.topbar{padding:0 18px;height:66px}.content{padding:20px 16px}.tabs{padding-left:16px;padding-right:16px}.span-8,.span-6,.span-4{grid-column:span 12}.hero{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.nav-btn{min-width:0;flex:1;padding:8px 5px}.nav-btn span{font-size:10px}.card{padding:16px}.item-row{gap:7px}.item-actions{flex-direction:column}}
 </style>
@@ -93,7 +93,7 @@ const SUPABASE_URL=window.MYJOURNEYS_CONFIG?.url||'';
 const SUPABASE_ANON_KEY=window.MYJOURNEYS_CONFIG?.publishableKey||'';
 const STORAGE_BUCKET='trip-files';
 if(!SUPABASE_URL||!SUPABASE_ANON_KEY)console.error('請先設定 config.js 的 Supabase URL 與 Publishable key');
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let currentUser=null, authSession=null, realtimeChannel=null, cloudReady=false, saving=false;
 const KEY='my_journeys_website_v1';
 const $=id=>document.getElementById(id);
@@ -107,61 +107,31 @@ function loadLocal(){try{const raw=JSON.parse(localStorage.getItem(KEY)||'{}');r
 function setSyncStatus(s){const el=$('syncStatus');if(el)el.textContent=s;}
 function tripToRow(t){const data={budget:Number(t.budget||0),itinerary:t.itinerary||[],flights:t.flights||[],documents:t.documents||[],expenses:t.expenses||[],packing:t.packing||[]};return {id:t.id,owner_id:t._ownerId||currentUser.id,title:t.title,destination:t.destination||'',start_date:t.startDate||null,end_date:t.endDate||null,data};}
 function rowToTrip(r){const d=r.data||{};return {id:r.id,_ownerId:r.owner_id,title:r.title||'',destination:r.destination||'',startDate:r.start_date||'',endDate:r.end_date||'',budget:Number(d.budget||0),itinerary:d.itinerary||[],flights:d.flights||[],documents:d.documents||[],expenses:d.expenses||[],packing:d.packing||[]};}
-async function save() {
-  if (!currentUser || !cloudReady) return;
-
-  const t = trip();
-  if (!t) return;
-
-  try {
+async function save(){
+  if(!currentUser||!cloudReady)return;
+  const t=trip();
+  if(!t)return;
+  try{
     setSyncStatus('同步中…');
-
-    const row = tripToRow(t);
-
-    if (t._ownerId) {
-      // 已存在的雲端旅程：Owner 或 Editor 更新資料
-      const { data, error } = await supabaseClient
-        .from('trips')
-        .update({
-          title: row.title,
-          destination: row.destination,
-          start_date: row.start_date,
-          end_date: row.end_date,
-          data: row.data
-        })
-        .eq('id', row.id)
+    const row=tripToRow(t);
+    if(t._ownerId){
+      const {data,error}=await supabase.from('trips')
+        .update({title:row.title,destination:row.destination,start_date:row.start_date,end_date:row.end_date,data:row.data})
+        .eq('id',row.id)
         .select('id')
         .maybeSingle();
-
-      if (error) throw error;
-
-      if (!data) {
-        throw new Error('找不到可編輯的旅程，請確認目前帳號的權限。');
-      }
-
-    } else {
-      // 新旅程：新增資料，建立者成為 Owner
-      const { error } = await supabaseClient
-        .from('trips')
-        .insert(row);
-
-      if (error) throw error;
-
-      // 記錄原始擁有者，避免下次儲存時重複新增
-      t._ownerId = row.owner_id;
+      if(error)throw error;
+      if(!data)throw new Error('找不到可編輯的旅程，請確認目前帳號的權限。');
+    }else{
+      const {error}=await supabase.from('trips').insert(row);
+      if(error)throw error;
+      t._ownerId=row.owner_id;
     }
-
     setSyncStatus('已同步');
-
-  } catch (e) {
-    console.error(e);
-    setSyncStatus('同步失敗');
-    alert('雲端儲存失敗：' + e.message);
-  }
+  }catch(e){console.error(e);setSyncStatus('同步失敗');alert('雲端儲存失敗：'+e.message);}
 }
-
-async function loadCloud(){setSyncStatus('載入雲端…');const {data,error}=await supabaseClient.from('trips').select('*').order('created_at',{ascending:true});if(error)throw error;state.trips=(data||[]).map(rowToTrip);state.activeId=state.trips[0]?.id||null;cloudReady=true;const local=loadLocal();if(!state.trips.length&&local.trips.length&&confirm('偵測到這台裝置有舊版旅程資料，要將 '+local.trips.length+' 趟旅程匯入雲端嗎？')){for(const old of local.trips){const t={...blankTrip(old),id:crypto.randomUUID(),_ownerId:currentUser.id};const {error:ie}=await supabaseClient.from('trips').insert(tripToRow(t));if(ie)throw ie;}const {data:again,error:ae}=await supabaseClient.from('trips').select('*').order('created_at',{ascending:true});if(ae)throw ae;state.trips=(again||[]).map(rowToTrip);state.activeId=state.trips[0]?.id||null;}setSyncStatus('已同步');render();subscribeRealtime();}
-function subscribeRealtime(){if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);realtimeChannel=supabaseClient.channel('my-journeys-live').on('postgres_changes',{event:'*',schema:'public',table:'trips'},payload=>{const id=payload.new?.id||payload.old?.id;if(!id)return;if(payload.eventType==='DELETE'){state.trips=state.trips.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;}else{const incoming=rowToTrip(payload.new);const i=state.trips.findIndex(t=>t.id===id);if(i<0)state.trips.push(incoming);else state.trips[i]=incoming;if(!state.activeId)state.activeId=id;}render();setSyncStatus('已即時更新');}).subscribe();}
+async function loadCloud(){setSyncStatus('載入雲端…');const {data,error}=await supabase.from('trips').select('*').order('created_at',{ascending:true});if(error)throw error;state.trips=(data||[]).map(rowToTrip);state.activeId=state.trips[0]?.id||null;cloudReady=true;const local=loadLocal();if(!state.trips.length&&local.trips.length&&confirm('偵測到這台裝置有舊版旅程資料，要將 '+local.trips.length+' 趟旅程匯入雲端嗎？')){for(const old of local.trips){const t={...blankTrip(old),id:crypto.randomUUID(),_ownerId:currentUser.id};const {error:ie}=await supabase.from('trips').insert(tripToRow(t));if(ie)throw ie;}const {data:again,error:ae}=await supabase.from('trips').select('*').order('created_at',{ascending:true});if(ae)throw ae;state.trips=(again||[]).map(rowToTrip);state.activeId=state.trips[0]?.id||null;}setSyncStatus('已同步');render();subscribeRealtime();}
+function subscribeRealtime(){if(realtimeChannel)supabase.removeChannel(realtimeChannel);realtimeChannel=supabase.channel('my-journeys-live').on('postgres_changes',{event:'*',schema:'public',table:'trips'},payload=>{const id=payload.new?.id||payload.old?.id;if(!id)return;if(payload.eventType==='DELETE'){state.trips=state.trips.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;}else{const incoming=rowToTrip(payload.new);const i=state.trips.findIndex(t=>t.id===id);if(i<0)state.trips.push(incoming);else state.trips[i]=incoming;if(!state.activeId)state.activeId=id;}render();setSyncStatus('已即時更新');}).subscribe();}
 const trip=()=>state.trips.find(t=>t.id===state.activeId)||null;
 function ensureArrays(t){for(const k of ['itinerary','flights','documents','expenses','packing'])if(!Array.isArray(t[k]))t[k]=[];}
 function go(tab){state.tab=tab;document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));$(tab+'Panel').classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));render();}
@@ -170,7 +140,7 @@ function renderHome(){const t=trip();$('tripCount').textContent=`${state.trips.l
 <div class="card span-8"><div class="eyebrow">TRAVEL DATE</div><h2 style="font-size:21px;margin:8px 0">${fmtDate(t.startDate)} — ${fmtDate(t.endDate)}</h2><div class="muted">${diff>0?`距離出發還有 ${diff} 天`:diff===0?'今天出發，旅途愉快！':'這趟旅行已開始或結束'}</div><div class="stat-row"><div class="stat"><strong>${t.itinerary.length}</strong><span>行程項目</span></div><div class="stat"><strong>${t.flights.length}</strong><span>航班</span></div><div class="stat"><strong>${t.documents.length}</strong><span>票券資料</span></div></div><div class="actions"><button class="btn small" onclick="editTrip('${t.id}')">編輯旅行</button><button class="btn small danger" onclick="deleteTrip('${t.id}')">刪除旅行</button></div></div>
 <div class="card span-4"><h3>預算概況</h3><div style="font-size:22px;font-weight:700">NT$ ${money(spent)}</div><div class="muted">已支出 / NT$ ${money(t.budget)}</div><div class="progress"><i style="width:${t.budget>0?Math.min(100,spent/t.budget*100):0}%"></i></div><div class="muted">剩餘 NT$ ${money(t.budget-spent)}</div></div>`;}
 $('tripList').innerHTML=state.trips.length?state.trips.map(x=>`<div class="trip-row ${x.id===t?.id?'active':''}" onclick="selectTrip('${x.id}')"><div class="grow"><strong>${esc(x.title)}</strong><small>${esc(x.destination)} · ${fmtDate(x.startDate)} — ${fmtDate(x.endDate)}</small></div><span>${x.id===t?.id?'✓':'›'}</span></div>`).join(''):'<div class="empty">新增第一趟旅行吧。</div>';}
-function renderItinerary(){const t=trip();$('itinerarySubtitle').textContent=t?`${t.title} · ${t.destination}`:'先建立旅行';if(!t){$('dayStrip').innerHTML='';$('itineraryList').innerHTML='<div class="empty">請先在首頁新增旅行。</div>';return;}const days=Math.max(1,Math.min(60,Math.floor((new Date(t.endDate+'T00:00:00')-new Date(t.startDate+'T00:00:00'))/86400000)+1));state.day=Math.min(state.day,days);$('dayStrip').innerHTML=Array.from({length:days},(_,i)=>{const d=new Date(t.startDate+'T00:00:00');d.setDate(d.getDate()+i);return `<button class="day-pill ${state.day===i+1?'active':''}" onclick="setDay(${i+1})"><small>DAY ${i+1}</small>${d.getMonth()+1}/${d.getDate()}</button>`}).join('');const list=t.itinerary.filter(x=>Number(x.day)===state.day);$('itineraryList').innerHTML=list.length?list.map(x=>`<div class="item-row" draggable="true" data-id="${x.id}" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropItem(event)"><div class="drag">⠿</div><div class="item-main"><span class="badge">${esc(x.category)}</span><small>${esc(x.time||'未設定時間')}</small><strong>${esc(x.title)}</strong>${x.location?`<small>${esc(x.location)}</small>`:''}${x.note?`<small>${esc(x.note)}</small>`:''}${x.location?`<a class="link" target="_blank" rel="noopener" href="${mapUrl(x.location)}">開啟地圖導航</a>`:''}</div><div class="item-actions"><button onclick="editItinerary('${x.id}')">編輯</button><button onclick="removeItem('itinerary','${x.id}')">刪除</button></div></div>`).join(''):'<div class="empty">這一天還沒有安排活動。<br>時間可以留白，先把想去的地方放進來。</div>';}
+function renderItinerary(){const t=trip();$('itinerarySubtitle').textContent=t?`${t.title} · ${t.destination}`:'先建立旅行';if(!t){$('dayStrip').innerHTML='';$('itineraryList').innerHTML='<div class="empty">請先在首頁新增旅行。</div>';return;}const days=Math.max(1,Math.min(60,Math.floor((new Date(t.endDate+'T00:00:00')-new Date(t.startDate+'T00:00:00'))/86400000)+1));state.day=Math.min(state.day,days);$('dayStrip').innerHTML=Array.from({length:days},(_,i)=>{const d=new Date(t.startDate+'T00:00:00');d.setDate(d.getDate()+i);return `<button class="day-pill ${state.day===i+1?'active':''}" onclick="setDay(${i+1})"><small>DAY ${i+1}</small>${d.getMonth()+1}/${d.getDate()}</button>`}).join('');const list=t.itinerary.filter(x=>Number(x.day)===state.day);$('itineraryList').innerHTML=list.length?list.map((x,index)=>`<div class="item-row" draggable="true" data-id="${x.id}" ondragstart="dragStart(event)" ondragend="dragEnd(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropItem(event)"><div class="drag" title="按住拖曳以調整順序" aria-label="拖曳排序">⠿</div><div class="item-main"><span class="badge">${esc(x.category)}</span><small>${esc(x.time||'未設定時間')}</small><strong>${esc(x.title)}</strong>${x.location?`<small>${esc(x.location)}</small>`:''}${x.note?`<small>${esc(x.note)}</small>`:''}${x.location?`<a class="link" target="_blank" rel="noopener" href="${mapUrl(x.location)}">開啟地圖導航</a>`:''}</div><div class="item-actions"><button class="move-btn" title="上移" aria-label="上移" ${index===0?'disabled':''} onclick="moveItinerary('${x.id}',-1)">↑</button><button class="move-btn" title="下移" aria-label="下移" ${index===list.length-1?'disabled':''} onclick="moveItinerary('${x.id}',1)">↓</button><button onclick="editItinerary('${x.id}')">編輯</button><button onclick="removeItem('itinerary','${x.id}')">刪除</button></div></div>`).join(''):'<div class="empty">這一天還沒有安排活動。<br>時間可以留白，先把想去的地方放進來。</div>';}
 function renderMap(){const t=trip();$('mapSubtitle').textContent=t?`${t.title} · ${t.destination}`:'';$('mapDestination').textContent=t?.destination||'尚未設定目的地';$('mapPlaces').innerHTML=t? t.itinerary.filter(x=>x.location).sort((a,b)=>a.day-b.day).map(x=>`<div class="item-row"><div class="item-main"><span class="badge">DAY ${x.day} · ${esc(x.category)}</span><strong>${esc(x.title)}</strong><small>${esc(x.location)}</small></div><a class="btn small" target="_blank" rel="noopener" href="${mapUrl(x.location)}">導航 ↗</a></div>`).join('')||'<div class="empty">在行程中加入地點後，這裡會整理導航入口。</div>':'<div class="empty">請先建立旅行。</div>';}
 function renderFlights(){const t=trip();$('flightSubtitle').textContent=t?.title||'先建立旅行';$('flightList').innerHTML=t?.flights.length?t.flights.map(f=>`<div class="card"><div class="section-head" style="margin:0 0 8px"><h2>${esc(f.flightNumber)}</h2><div class="item-actions"><button onclick="editFlight('${f.id}')">編輯</button><button onclick="removeItem('flights','${f.id}')">刪除</button></div></div><div class="muted">${esc(f.airline)} ${f.from||f.to?'·':''} ${esc(f.from)} ${f.from||f.to?'→':''} ${esc(f.to)}</div><div class="muted">${esc(f.date)} ${esc(f.note)}</div><div class="actions"><a class="btn small" target="_blank" rel="noopener" href="https://www.flightaware.com/live/flight/${encodeURIComponent(f.flightNumber)}">查詢航班 ↗</a></div></div>`).join(''):'<div class="empty">尚未新增航班。</div>';}
 function renderFolder(){const t=trip();$('folderSubtitle').textContent=t?.title||'先建立旅行';for(const key of ['documents','budget','packing']){$(key+'Section').classList.toggle('hide',state.folder!==key);document.querySelectorAll('#folderSegments button').forEach(b=>b.classList.toggle('active',b.dataset.section===state.folder));}if(!t){$('documentList').innerHTML='<div class="empty">請先建立旅行。</div>';return;}
@@ -181,10 +151,10 @@ function mapUrl(q){return 'https://www.google.com/maps/search/?api=1&query='+enc
 function safeUrl(s){try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch{return '#'}}
 function selectTrip(id){state.activeId=id;state.day=1;save();render();}
 function setDay(n){state.day=n;renderItinerary();}
-async function removeItem(key,id){const t=trip();if(!t)return;if(!confirm('確定要刪除這筆資料嗎？'))return;const target=t[key].find(x=>x.id===id);if(key==='documents'&&target?.attachments?.length){const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).remove(target.attachments.map(a=>a.path));if(error)throw error;}t[key]=t[key].filter(x=>x.id!==id);await save();render();}
+async function removeItem(key,id){const t=trip();if(!t)return;if(!confirm('確定要刪除這筆資料嗎？'))return;const target=t[key].find(x=>x.id===id);if(key==='documents'&&target?.attachments?.length){const {error}=await supabase.storage.from(STORAGE_BUCKET).remove(target.attachments.map(a=>a.path));if(error)throw error;}t[key]=t[key].filter(x=>x.id!==id);await save();render();}
 function togglePacking(id,value){const x=trip().packing.find(x=>x.id===id);if(x){x.checked=value;save();renderFolder();}}
 function editTrip(id){const t=state.trips.find(x=>x.id===id);openForm('編輯旅行',[{name:'title',label:'旅行名稱',value:t.title,required:true},{name:'destination',label:'目的地',value:t.destination,required:true},{name:'startDate',label:'出發日期',type:'date',value:t.startDate,required:true},{name:'endDate',label:'回程日期',type:'date',value:t.endDate,required:true},{name:'budget',label:'總預算（NT$）',type:'number',value:t.budget}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');Object.assign(t,{...v,budget:Number(v.budget||0)});save();render();});}
-async function deleteTrip(id){const t=state.trips.find(x=>x.id===id);if(!t||!confirm(`刪除「${t.title}」及其所有資料？`))return;const {error}=await supabaseClient.from('trips').delete().eq('id',id);if(error){alert('刪除失敗：'+error.message);return;}state.trips=state.trips.filter(x=>x.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;render();}
+async function deleteTrip(id){const t=state.trips.find(x=>x.id===id);if(!t||!confirm(`刪除「${t.title}」及其所有資料？`))return;const {error}=await supabase.from('trips').delete().eq('id',id);if(error){alert('刪除失敗：'+error.message);return;}state.trips=state.trips.filter(x=>x.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;render();}
 function openForm(title,fields,onSave){$('modalTitle').textContent=title;$('modalFields').innerHTML=fields.map(f=>`<div class="field ${f.full?'full':''}"><label>${esc(f.label)}</label>${f.type==='select'?`<select name="${f.name}">${f.options.map(o=>`<option ${o===f.value?'selected':''}>${esc(o)}</option>`).join('')}</select>`:f.type==='textarea'?`<textarea name="${f.name}" placeholder="${esc(f.placeholder||'')}">${esc(f.value||'')}</textarea>`:f.type==='file'?`<input name="${f.name}" type="file" accept="${esc(f.accept||'*/*')}" ${f.multiple?'multiple':''}>`:`<input name="${f.name}" type="${f.type||'text'}" value="${esc(f.value??'')}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''} ${f.min!==undefined?`min="${f.min}"`:''}>`}</div>`).join('');$('modalBackdrop').classList.add('open');$('modalForm').onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),data=Object.fromEntries(fd.entries());data.attachmentsFile=fd.getAll('attachments').filter(x=>x instanceof File&&x.size>0);try{await onSave(data);closeModal();}catch(err){console.error(err);alert('操作失敗：'+err.message);}};}
 function closeModal(){$('modalBackdrop').classList.remove('open');}
 function addTrip(){openForm('新增旅行',[{name:'title',label:'旅行名稱',placeholder:'例如：東京冬日旅行',required:true},{name:'destination',label:'目的地',placeholder:'Tokyo, Japan',required:true},{name:'startDate',label:'出發日期',type:'date',value:new Date().toISOString().slice(0,10),required:true},{name:'endDate',label:'回程日期',type:'date',value:new Date(Date.now()+3*86400000).toISOString().slice(0,10),required:true},{name:'budget',label:'總預算（NT$，選填）',type:'number',value:0}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');const t=blankTrip({...v,budget:Number(v.budget||0),_ownerId:currentUser.id,id:crypto.randomUUID()});state.trips.push(t);state.activeId=t.id;state.day=1;save();render();});}
@@ -192,9 +162,9 @@ function addItinerary(id){const t=trip();if(!t)return;const days=Math.max(1,Math
 function editItinerary(id){const t=trip(),x=t.itinerary.find(x=>x.id===id);if(!x)return;const days=Math.max(1,Math.floor((new Date(t.endDate)-new Date(t.startDate))/86400000)+1);openForm('編輯行程',[{name:'title',label:'名稱',value:x.title,required:true},{name:'category',label:'類型',type:'select',value:x.category,options:['景點','交通','住宿','餐廳','購物','活動','其他']},{name:'day',label:'安排日期',type:'select',value:String(x.day),options:Array.from({length:days},(_,i)=>String(i+1))},{name:'time',label:'時間（選填）',value:x.time},{name:'location',label:'地址／地點',value:x.location},{name:'note',label:'備註',type:'textarea',value:x.note,full:true}],v=>{Object.assign(x,{...v,day:Number(v.day)});save();render();});}
 function addFlight(){const t=trip();if(!t)return;openForm('新增航班',[{name:'flightNumber',label:'航班編號',required:true,placeholder:'例如：CI100'},{name:'airline',label:'航空公司'},{name:'from',label:'出發地'},{name:'to',label:'目的地'},{name:'date',label:'日期／時間'},{name:'note',label:'備註',type:'textarea',full:true}],v=>{t.flights.push({id:uid(),...v});save();renderFlights();renderHome();});}
 function editFlight(id){const t=trip(),x=t.flights.find(x=>x.id===id);if(!x)return;openForm('編輯航班',[{name:'flightNumber',label:'航班編號',value:x.flightNumber,required:true},{name:'airline',label:'航空公司',value:x.airline},{name:'from',label:'出發地',value:x.from},{name:'to',label:'目的地',value:x.to},{name:'date',label:'日期／時間',value:x.date},{name:'note',label:'備註',type:'textarea',value:x.note,full:true}],v=>{Object.assign(x,v);save();renderFlights();});}
-async function uploadDocumentFiles(doc,files){const t=trip();if(!t||!files?.length)return;doc.attachments=doc.attachments||[];for(const file of files){if(file.size>20*1024*1024)throw new Error(file.name+' 超過 20MB 限制');const clean=file.name.replace(/[^\w.\-\u4e00-\u9fff]/g,'_');const path=`${t.id}/${currentUser.id}/${uid()}-${clean}`;const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).upload(path,file,{upsert:false,contentType:file.type||'application/octet-stream'});if(error)throw error;doc.attachments.push({name:file.name,path,mimeType:file.type,size:file.size});}}
-async function openAttachment(path){const {data,error}=await supabaseClient.storage.from(STORAGE_BUCKET).createSignedUrl(path,3600);if(error) return alert('無法開啟附件：'+error.message);window.open(data.signedUrl,'_blank','noopener');}
-async function deleteAttachment(docId,path){const t=trip(),doc=t?.documents.find(x=>x.id===docId);if(!doc||!confirm('確定刪除此附件？'))return;const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).remove([path]);if(error)throw error;doc.attachments=(doc.attachments||[]).filter(a=>a.path!==path);await save();renderFolder();}
+async function uploadDocumentFiles(doc,files){const t=trip();if(!t||!files?.length)return;doc.attachments=doc.attachments||[];for(const file of files){if(file.size>20*1024*1024)throw new Error(file.name+' 超過 20MB 限制');const clean=file.name.replace(/[^\w.\-\u4e00-\u9fff]/g,'_');const path=`${t.id}/${currentUser.id}/${uid()}-${clean}`;const {error}=await supabase.storage.from(STORAGE_BUCKET).upload(path,file,{upsert:false,contentType:file.type||'application/octet-stream'});if(error)throw error;doc.attachments.push({name:file.name,path,mimeType:file.type,size:file.size});}}
+async function openAttachment(path){const {data,error}=await supabase.storage.from(STORAGE_BUCKET).createSignedUrl(path,3600);if(error) return alert('無法開啟附件：'+error.message);window.open(data.signedUrl,'_blank','noopener');}
+async function deleteAttachment(docId,path){const t=trip(),doc=t?.documents.find(x=>x.id===docId);if(!doc||!confirm('確定刪除此附件？'))return;const {error}=await supabase.storage.from(STORAGE_BUCKET).remove([path]);if(error)throw error;doc.attachments=(doc.attachments||[]).filter(a=>a.path!==path);await save();renderFolder();}
 function attachmentMarkup(d){return (d.attachments||[]).map(a=>`<div class="file-chip"><span>📎 ${esc(a.name)} (${(a.size/1024/1024).toFixed(2)} MB)</span><button onclick="openAttachment('${esc(a.path)}')">預覽／下載</button><button onclick="deleteAttachment('${d.id}','${esc(a.path)}')">刪除</button></div>`).join('');}
 function addDocument(){const t=trip();if(!t)return;openForm('新增票券／訂單',[{name:'title',label:'名稱',required:true},{name:'kind',label:'類型',type:'select',value:'票券',options:['票券','住宿','交通','餐廳預約','訂單','其他']},{name:'code',label:'預約代碼／票券編號'},{name:'url',label:'相關網址'},{name:'note',label:'備註',type:'textarea',full:true},{name:'attachments',label:'上傳附件（圖片／PDF，單檔最多 20MB）',type:'file',accept:'image/*,application/pdf',multiple:true,full:true}],async v=>{const files=v.attachmentsFile||[];delete v.attachmentsFile;delete v.attachments;const d={id:crypto.randomUUID(),...v,attachments:[]};t.documents.push(d);await uploadDocumentFiles(d,files);await save();renderFolder();renderHome();});}
 function editDocument(id){const t=trip(),x=t.documents.find(x=>x.id===id);if(!x)return;openForm('編輯票券／訂單',[{name:'title',label:'名稱',value:x.title,required:true},{name:'kind',label:'類型',type:'select',value:x.kind,options:['票券','住宿','交通','餐廳預約','訂單','其他']},{name:'code',label:'預約代碼／票券編號',value:x.code},{name:'url',label:'相關網址',value:x.url},{name:'note',label:'備註',type:'textarea',value:x.note,full:true},{name:'attachments',label:'新增附件（圖片／PDF，單檔最多 20MB）',type:'file',accept:'image/*,application/pdf',multiple:true,full:true}],async v=>{const files=v.attachmentsFile||[];delete v.attachmentsFile;delete v.attachments;Object.assign(x,v);await uploadDocumentFiles(x,files);await save();renderFolder();});}
@@ -204,71 +174,67 @@ function editExpense(id){const t=trip(),x=t.expenses.find(x=>x.id===id);openForm
 function addPacking(){const t=trip();openForm('新增行李物品',[{name:'title',label:'物品名稱',required:true,placeholder:'例如：護照、充電器'}],v=>{t.packing.push({id:uid(),title:v.title,checked:false});save();renderFolder();});}
 function editPacking(id){const t=trip(),x=t.packing.find(x=>x.id===id);openForm('編輯行李物品',[{name:'title',label:'物品名稱',value:x.title,required:true}],v=>{x.title=v.title;save();renderFolder();});}
 let draggedId=null;
-function dragStart(e){draggedId=e.currentTarget.dataset.id;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
-function dragOver(e){e.preventDefault();e.currentTarget.classList.add('over');}
-function dragLeave(e){e.currentTarget.classList.remove('over');}
-function dropItem(e){e.preventDefault();const target=e.currentTarget;target.classList.remove('over');const t=trip();if(!t||!draggedId)return;const list=t.itinerary.filter(x=>Number(x.day)===state.day);const from=list.findIndex(x=>x.id===draggedId),to=list.findIndex(x=>x.id===target.dataset.id);if(from<0||to<0||from===to)return;const moved=list.splice(from,1)[0];list.splice(to,0,moved);const other=t.itinerary.filter(x=>Number(x.day)!==state.day);t.itinerary=[...other,...list];draggedId=null;save();renderItinerary();}
+function dragStart(e){
+  const row=e.currentTarget;
+  draggedId=row.dataset.id;
+  row.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+  // Some browsers require dataTransfer data for native drag-and-drop to start.
+  e.dataTransfer.setData('text/plain',draggedId);
+}
+function dragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.item-row.over').forEach(el=>el.classList.remove('over'));draggedId=null;}
+function dragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';e.currentTarget.classList.add('over');}
+function dragLeave(e){if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.classList.remove('over');}
+async function dropItem(e){
+  e.preventDefault();
+  const target=e.currentTarget;
+  target.classList.remove('over');
+  const t=trip();
+  const sourceId=draggedId||e.dataTransfer.getData('text/plain');
+  if(!t||!sourceId)return;
+  const list=t.itinerary.filter(x=>Number(x.day)===state.day);
+  const from=list.findIndex(x=>x.id===sourceId);
+  const to=list.findIndex(x=>x.id===target.dataset.id);
+  if(from<0||to<0||from===to){dragEnd({currentTarget:document.querySelector(`[data-id="${sourceId}"]` )||target});return;}
+  const moved=list.splice(from,1)[0];
+  const targetIndex=list.findIndex(x=>x.id===target.dataset.id);
+  const rect=target.getBoundingClientRect();
+  const insertAfter=e.clientY>rect.top+rect.height/2;
+  list.splice(targetIndex+(insertAfter?1:0),0,moved);
+  const other=t.itinerary.filter(x=>Number(x.day)!==state.day);
+  t.itinerary=[...other,...list];
+  draggedId=null;
+  await save();
+  renderItinerary();
+}
+async function moveItinerary(id,direction){
+  const t=trip();
+  if(!t)return;
+  const list=t.itinerary.filter(x=>Number(x.day)===state.day);
+  const index=list.findIndex(x=>x.id===id);
+  const next=index+direction;
+  if(index<0||next<0||next>=list.length)return;
+  [list[index],list[next]]=[list[next],list[index]];
+  const other=t.itinerary.filter(x=>Number(x.day)!==state.day);
+  t.itinerary=[...other,...list];
+  await save();
+  renderItinerary();
+}
 function exportData(){const blob=new Blob([JSON.stringify({trips:state.trips,activeId:state.activeId},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-journeys-backup.json';a.click();URL.revokeObjectURL(a.href);}
 function importData(file){const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(!Array.isArray(data.trips))throw Error('格式不正確');state.trips=data.trips;state.activeId=data.activeId||state.trips[0]?.id||null;state.trips.forEach(ensureArrays);save();render();alert('資料還原完成');}catch(e){alert('匯入失敗：請選擇有效的備份 JSON。');}};reader.readAsText(file);}
-async function inviteMember(){const t=trip();if(!t)return alert('請先選擇一趟旅程');const email=prompt('請輸入旅伴的 Email');if(!email)return;const role=confirm('按「確定」給予編輯權限；按「取消」給予唯讀權限。')?'editor':'viewer';const token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');const {error}=await supabaseClient.from('trip_invites').insert({trip_id:t.id,email:email.trim().toLowerCase(),role,token_hash:await sha256(token),created_by:currentUser.id});if(error)throw error;const link=location.origin+location.pathname+'?invite='+token;await navigator.clipboard.writeText(link).catch(()=>{});alert('邀請連結已建立並嘗試複製：\n'+link+'\n請把連結傳給旅伴。');}
+async function inviteMember(){const t=trip();if(!t)return alert('請先選擇一趟旅程');const email=prompt('請輸入旅伴的 Email');if(!email)return;const role=confirm('按「確定」給予編輯權限；按「取消」給予唯讀權限。')?'editor':'viewer';const token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');const {error}=await supabase.from('trip_invites').insert({trip_id:t.id,email:email.trim().toLowerCase(),role,token_hash:await sha256(token),created_by:currentUser.id});if(error)throw error;const link=location.origin+location.pathname+'?invite='+token;await navigator.clipboard.writeText(link).catch(()=>{});alert('邀請連結已建立並嘗試複製：\n'+link+'\n請把連結傳給旅伴。');}
 async function sha256(value){const bytes=new TextEncoder().encode(value);const hash=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');}
-async function acceptInviteFromUrl(){const token=new URLSearchParams(location.search).get('invite');if(!token||!currentUser)return;const {data,error}=await supabaseClient.rpc('accept_trip_invite',{p_token:token});if(error){alert('接受邀請失敗：'+error.message);return;}history.replaceState({},'',location.pathname);alert('已加入旅程！');await loadCloud();}
-async function showMembers(){const t=trip();if(!t)return alert('請先選擇旅程');const {data,error}=await supabaseClient.from('trip_members').select('user_id,role,joined_at').eq('trip_id',t.id);if(error)return alert(error.message);alert('目前成員\n'+(data||[]).map(m=>m.user_id+' · '+m.role).join('\n'))}
-async function signIn(email,password){const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;authSession=data.session;currentUser=data.user;await afterLogin();}
-async function signUp(email,password){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
-
-
-
-
-async function afterLogin(){
-  if(!currentUser)return;
-
-  // JWT 診斷
-  try {
-    const {data, error} = await supabaseClient.auth.getSession();
-    const session = data?.session;
-    let claims = null;
-
-    if(session?.access_token){
-      const payload = session.access_token.split('.')[1]
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
-
-      claims = JSON.parse(atob(
-        payload.padEnd(Math.ceil(payload.length / 4) * 4, '=')
-      ));
-    }
-
-    console.log('[AUTH DIAGNOSTIC]', {
-      appUserId: currentUser.id,
-      sessionExists: !!session,
-      sessionUserId: session?.user?.id ?? null,
-      tokenSub: claims?.sub ?? null,
-      tokenRole: claims?.role ?? null,
-      error: error?.message ?? null
-    });
-
-  } catch(err) {
-    console.warn('[AUTH DIAGNOSTIC ERROR]', err.message);
-  }
-
-  // 原本登入流程
-  $('authGate').classList.add('hide');
-  $('accountBtn').textContent='登出';
-  $('accountBtn').title=currentUser.email||'';
-  await loadCloud();
-  await acceptInviteFromUrl();
-}
-
-
-
-
+async function acceptInviteFromUrl(){const token=new URLSearchParams(location.search).get('invite');if(!token||!currentUser)return;const {data,error}=await supabase.rpc('accept_trip_invite',{p_token:token});if(error){alert('接受邀請失敗：'+error.message);return;}history.replaceState({},'',location.pathname);alert('已加入旅程！');await loadCloud();}
+async function showMembers(){const t=trip();if(!t)return alert('請先選擇旅程');const {data,error}=await supabase.from('trip_members').select('user_id,role,joined_at').eq('trip_id',t.id);if(error)return alert(error.message);alert('目前成員\n'+(data||[]).map(m=>m.user_id+' · '+m.role).join('\n'))}
+async function signIn(email,password){const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;authSession=data.session;currentUser=data.user;await afterLogin();}
+async function signUp(email,password){const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
+async function afterLogin(){if(!currentUser)return;$('authGate').classList.add('hide');$('accountBtn').textContent='登出';$('accountBtn').title=currentUser.email||'';await loadCloud();await acceptInviteFromUrl();}
 $('authForm').onsubmit=async e=>{e.preventDefault();$('authMessage').textContent='登入中…';try{await signIn($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('signUpBtn').onclick=async()=>{if(!$('authEmail').value||!$('authPassword').value)return $('authMessage').textContent='請先輸入 Email 和密碼。';$('authMessage').textContent='建立帳號中…';try{await signUp($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
-$('accountBtn').onclick=async()=>{if(!currentUser)return;$('authGate').classList.remove('hide');$('authMessage').textContent='';await supabaseClient.auth.signOut();currentUser=null;authSession=null;cloudReady=false;state.trips=[];state.activeId=null;$('accountBtn').textContent='登入';setSyncStatus('未登入');render();};
+$('accountBtn').onclick=async()=>{if(!currentUser)return;$('authGate').classList.remove('hide');$('authMessage').textContent='';await supabase.auth.signOut();currentUser=null;authSession=null;cloudReady=false;state.trips=[];state.activeId=null;$('accountBtn').textContent='登入';setSyncStatus('未登入');render();};
 $('inviteTripBtn').onclick=()=>inviteMember().catch(e=>alert(e.message));$('membersBtn').onclick=()=>showMembers();
-supabaseClient.auth.getSession().then(async({data,error})=>{if(error){$('authMessage').textContent=error.message;return;}if(data.session){authSession=data.session;currentUser=data.session.user;try{await afterLogin();}catch(e){console.error(e);$('authGate').classList.remove('hide');$('authMessage').textContent='雲端載入失敗：'+e.message;}}});
-supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session){authSession=session;currentUser=session.user;} });
+supabase.auth.getSession().then(async({data,error})=>{if(error){$('authMessage').textContent=error.message;return;}if(data.session){authSession=data.session;currentUser=data.session.user;try{await afterLogin();}catch(e){console.error(e);$('authGate').classList.remove('hide');$('authMessage').textContent='雲端載入失敗：'+e.message;}}});
+supabase.auth.onAuthStateChange((_event,session)=>{if(session){authSession=session;currentUser=session.user;} });
 $('newTripBtn').onclick=addTrip;$('addItineraryBtn').onclick=()=>addItinerary();$('addFlightBtn').onclick=addFlight;$('addDocumentBtn').onclick=addDocument;$('editBudgetBtn').onclick=editBudget;$('addExpenseBtn').onclick=addExpense;$('addPackingBtn').onclick=addPacking;
 $('openDestinationMap').onclick=()=>{const t=trip();if(t)window.open(mapUrl(t.destination),'_blank','noopener');};$('searchTransit').onclick=()=>{const t=trip();if(t)window.open(mapUrl(t.destination+' 大眾運輸'),'_blank','noopener');};
 $('folderSegments').onclick=e=>{const b=e.target.closest('button[data-section]');if(!b)return;state.folder=b.dataset.section;renderFolder();};
