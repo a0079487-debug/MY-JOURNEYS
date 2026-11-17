@@ -178,6 +178,16 @@ async function afterLogin(){
   await loadCloud();
   await acceptInviteFromUrl();
 }
+const {data:{session}} = await supabase.auth.getSession();
+console.log('[JWT 診斷]', {
+  userId: session?.user?.id,
+  tokenSubject: session?.access_token
+    ? JSON.parse(atob(session.access_token.split('.')[1])).sub
+    : null,
+  tokenRole: session?.access_token
+    ? JSON.parse(atob(session.access_token.split('.')[1])).role
+    : null
+});
 $('authForm').onsubmit=async e=>{e.preventDefault();$('authMessage').textContent='登入中…';try{await signIn($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('signUpBtn').onclick=async()=>{if(!$('authEmail').value||!$('authPassword').value)return $('authMessage').textContent='請先輸入 Email 和密碼。';$('authMessage').textContent='建立帳號中…';try{await signUp($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('accountBtn').onclick=async()=>{if(!currentUser)return;$('authGate').classList.remove('hide');$('authMessage').textContent='';await supabaseClient.auth.signOut();currentUser=null;authSession=null;cloudReady=false;state.trips=[];state.activeId=null;$('accountBtn').textContent='登入';setSyncStatus('未登入');render();};
