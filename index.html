@@ -169,6 +169,19 @@ async function signUp(email,password){const {data,error}=await supabaseClient.au
 async function afterLogin(){
   if(!currentUser)return;
 
+ 
+  const {data:{session}} = await supabase.auth.getSession();
+
+  const claims = session?.access_token
+    ? JSON.parse(atob(session.access_token.split('.')[1]))
+    : null;
+
+  console.log('[JWT 診斷]', {
+    userId: session?.user?.id,
+    tokenSubject: claims?.sub,
+    tokenRole: claims?.role
+  });
+
   console.log('[MY JOURNEYS] 登入者 ID：', currentUser.id);
   console.log('[MY JOURNEYS] 登入者 Email：', currentUser.email);
 
