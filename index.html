@@ -93,7 +93,7 @@ const SUPABASE_URL=window.MYJOURNEYS_CONFIG?.url||'';
 const SUPABASE_ANON_KEY=window.MYJOURNEYS_CONFIG?.publishableKey||'';
 const STORAGE_BUCKET='trip-files';
 if(!SUPABASE_URL||!SUPABASE_ANON_KEY)console.error('請先設定 config.js 的 Supabase URL 與 Publishable key');
-const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let currentUser=null, authSession=null, realtimeChannel=null, cloudReady=false, saving=false;
 const KEY='my_journeys_website_v1';
 const $=id=>document.getElementById(id);
