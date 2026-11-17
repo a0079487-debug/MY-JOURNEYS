@@ -95,7 +95,6 @@ const STORAGE_BUCKET='trip-files';
 if(!SUPABASE_URL||!SUPABASE_ANON_KEY)console.error('請先設定 config.js 的 Supabase URL 與 Publishable key');
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser=null, authSession=null, realtimeChannel=null, cloudReady=false, saving=false;
-console.log("目前登入者 ID：", currentUser?.id);
 const KEY='my_journeys_website_v1';
 const $=id=>document.getElementById(id);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
@@ -171,7 +170,6 @@ async function signUp(email,password){const {data,error}=await supabaseClient.au
 async function afterLogin(){
   if(!currentUser)return;
 
-  // JWT 診斷：只輸出必要資訊，不輸出 Token 本身
   try {
     const {data, error} = await supabase.auth.getSession();
     const session = data?.session;
@@ -182,12 +180,9 @@ async function afterLogin(){
         .replace(/-/g, '+')
         .replace(/_/g, '/');
 
-      const padded = payload.padEnd(
-        Math.ceil(payload.length / 4) * 4,
-        '='
-      );
-
-      claims = JSON.parse(atob(padded));
+      claims = JSON.parse(atob(
+        payload.padEnd(Math.ceil(payload.length / 4) * 4, '=')
+      ));
     }
 
     console.log('[AUTH DIAGNOSTIC]', {
@@ -198,12 +193,10 @@ async function afterLogin(){
       tokenRole: claims?.role ?? null,
       error: error?.message ?? null
     });
-
   } catch(err) {
     console.warn('[AUTH DIAGNOSTIC ERROR]', err.message);
   }
 
-  // 原本的登入流程，保持不變
   $('authGate').classList.add('hide');
   $('accountBtn').textContent='登出';
   $('accountBtn').title=currentUser.email||'';
