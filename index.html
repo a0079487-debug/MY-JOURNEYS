@@ -60,15 +60,58 @@ button,input,select,textarea{font-size:1rem;line-height:1.4}
   .sync-indicator{display:none}
 }
 
+/* 行程卡片文字排版 */
+.item-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+/* 分類標籤 */
+.item-main .badge {
+    font-size: 11px;
+    margin-bottom: 7px;
+}
+
+/* 時間 */
+.item-main .itinerary-time {
+    display: block;
+    font-size: 15px !important;
+    line-height: 1.45;
+    color: var(--muted);
+    margin-bottom: 2px;
+}
+
+/* 景點名稱 */
+.item-main strong {
+    display: block;
+    font-size: 16px !important;
+    font-weight: 700;
+    line-height: 1.45;
+    margin-bottom: 5px;
+}
+
+/* 地點與備註 */
+.item-main small:not(.itinerary-time) {
+    font-size: 12px;
+    line-height: 1.6;
+    margin-top: 2px;
+}
+
+/* 手機版 */
 @media (max-width: 720px) {
-    .item-main > small:first-of-type {
-        font-size: 16px !important;
-        line-height: 1.4;
+    .item-row {
+        gap: 9px;
+        padding: 12px;
+    }
+
+    .item-main .itinerary-time {
+        font-size: 15px !important;
     }
 
     .item-main strong {
         font-size: 16px !important;
-        line-height: 1.4;
     }
 }
 
