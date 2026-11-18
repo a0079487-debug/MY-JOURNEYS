@@ -497,24 +497,33 @@ async function moveItinerary(id,direction){
 }
 function exportData(){const blob=new Blob([JSON.stringify({trips:state.trips,activeId:state.activeId},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-journeys-backup.json';a.click();URL.revokeObjectURL(a.href);}
 function importData(file){const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(!Array.isArray(data.trips))throw Error('格式不正確');state.trips=data.trips;state.activeId=data.activeId||state.trips[0]?.id||null;state.trips.forEach(ensureArrays);save();render();alert('資料還原完成');}catch(e){alert('匯入失敗：請選擇有效的備份 JSON。');}};reader.readAsText(file);}
+async function inviteMember(){const t=trip();if(!t)return alert('請先選擇一趟旅程');const email=prompt('請輸入旅伴的 Email');if(!email)return;const role=confirm('按「確定」給予編輯權限；按「取消」給予唯讀權限。')?'editor':'viewer';const token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');const {error}=await supabaseClient.from('trip_invites').insert({trip_id:t.id,email:email.trim().toLowerCase(),role,token_hash:await sha256(token),created_by:currentUser.id});if(error)throw error;const link=location.origin+location.pathname+'?invite='+token;await navigator.clipboard.writeText(link).catch(()=>{});alert('邀請連結已建立並嘗試複製：\n'+link+'\n請把連結傳給旅伴。');}
+async function sha256(value){const bytes=new TextEncoder().encode(value);const hash=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function acceptInviteFromUrl(){const token=new URLSearchParams(location.search).get('invite');if(!token||!currentUser)return;const {data,error}=await supabaseClient.rpc('accept_trip_invite',{p_token:token});if(error){alert('接受邀請失敗：'+error.message);return;}history.replaceState({},'',location.pathname);alert('已加入旅程！');await loadCloud();}
+async function showMembers(){const t=trip();if(!t)return alert('請先選擇旅程');const {data,error}=await supabaseClient.from('trip_members').select('user_id,role,joined_at').eq('trip_id',t.id);if(error)return alert(error.message);alert('目前成員\n'+(data||[]).map(m=>m.user_id+' · '+m.role).join('\n'))}
+async function signIn(email,password){const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;authSession=data.session;currentUser=data.user;await afterLogin();}
+async function signUp(email,password){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
+async function afterLogin(){if(!currentUser)return;$('authGate').classList.add('hide');$('accountBtn').textContent='登出';$('accountBtn').title=currentUser.email||'';await loadCloud();await acceptInviteFromUrl();}
+
 async function openPublicShare(){
   const t=trip();if(!t)return alert('請先選擇一趟旅行');
   try{
-    const token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const bytes=crypto.getRandomValues(new Uint8Array(32));
+    const token=Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
     const hash=await sha256(token);
     const {error}=await supabaseClient.rpc('create_public_trip_share',{p_trip_id:t.id,p_token_hash:hash});
     if(error)throw error;
     const url=location.origin+location.pathname+'?share='+token;
-    await navigator.clipboard.writeText(url).catch(()=>{});
-    alert('公開唯讀連結已建立並嘗試複製：\\n'+url+'\\n任何持有連結的人都能檢視公開行程。');
-  }catch(e){console.error(e);alert('建立公開分享失敗：'+e.message+'\\n請先執行附上的 Supabase SQL。');}
+    try{await navigator.clipboard.writeText(url);}catch(_){}
+    alert('公開唯讀連結已建立：\n'+url+'\n任何持有連結的人都能檢視公開行程。');
+  }catch(e){console.error(e);alert('建立公開分享失敗：'+e.message+'\n請先執行 Supabase 公開分享 SQL。');}
 }
 async function revokePublicShare(){
   const t=trip();if(!t)return;
   if(!confirm('確定關閉這趟旅行的所有公開分享連結？'))return;
   const {error}=await supabaseClient.rpc('revoke_public_trip_shares',{p_trip_id:t.id});
   if(error){alert('關閉分享失敗：'+error.message);return;}
-  alert('公開分享連結已失效。');
+  alert('這趟旅行的公開分享連結已失效。');
 }
 async function loadPublicShare(token){
   document.querySelector('.app').classList.add('hide');
@@ -527,25 +536,16 @@ async function loadPublicShare(token){
     $('publicTripTitle').textContent=data.title||'旅行行程';
     $('publicTripDates').textContent=[data.destination,data.start_date,data.end_date].filter(Boolean).join(' · ');
     const items=Array.isArray(data.itinerary)?data.itinerary:[];
-    $('publicItinerary').innerHTML=items.length?items.map(x=>`<div class="item-row" style="margin:10px 0"><div class="item-main"><span class="badge">DAY ${esc(x.day||'')} · ${esc(x.category||'行程')}</span><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><strong>${esc(x.title||'未命名行程')}</strong>${x.time?`<span style="font-size:16px;color:var(--gold);font-weight:700">${esc(x.time)}</span>`:''}</div>${x.location?`<small>${esc(x.location)}</small>`:''}</div>${x.location?`<a class="btn small" target="_blank" rel="noopener" href="${mapUrl(x.location)}">地圖</a>`:''}</div>`).join(''):'<div class="empty">目前沒有公開的行程項目。</div>';
-  }catch(e){
-    $('publicTripTitle').textContent='無法開啟分享行程';
-    $('publicTripDates').textContent=e.message;
-    $('publicItinerary').innerHTML='<div class="empty">請確認連結是否正確，或詢問分享者是否已關閉分享。</div>';
-  }
+    $('publicItinerary').innerHTML=items.length?items.map(x=>`<div class="item-row" style="margin:10px 0"><div class="item-main"><span class="badge">DAY ${esc(x.day||'')} · ${esc(x.category||'行程')}</span><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><strong>${esc(x.title||'未命名行程')}</strong>${x.time?`<span style="font-size:16px;color:var(--gold);font-weight:700">${esc(x.time)}</span>`:''}</div>${x.location?`<small>${esc(x.location)}</small>`:''}</div>${x.location?`<a class="btn small" target="_blank" rel="noopener" href="${mapUrl(x.location)}">地圖 ↗</a>`:''}</div>`).join(''):'<div class="empty">目前沒有公開的行程項目。</div>';
+  }catch(e){console.error(e);$('publicTripTitle').textContent='無法開啟分享行程';$('publicTripDates').textContent=e.message;$('publicItinerary').innerHTML='';}
 }
-async function inviteMember(){const t=trip();if(!t)return alert('請先選擇一趟旅程');const email=prompt('請輸入旅伴的 Email');if(!email)return;const role=confirm('按「確定」給予編輯權限；按「取消」給予唯讀權限。')?'editor':'viewer';const token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');const {error}=await supabaseClient.from('trip_invites').insert({trip_id:t.id,email:email.trim().toLowerCase(),role,token_hash:await sha256(token),created_by:currentUser.id});if(error)throw error;const link=location.origin+location.pathname+'?invite='+token;await navigator.clipboard.writeText(link).catch(()=>{});alert('邀請連結已建立並嘗試複製：\n'+link+'\n請把連結傳給旅伴。');}
-async function sha256(value){const bytes=new TextEncoder().encode(value);const hash=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');}
-async function acceptInviteFromUrl(){const token=new URLSearchParams(location.search).get('invite');if(!token||!currentUser)return;const {data,error}=await supabaseClient.rpc('accept_trip_invite',{p_token:token});if(error){alert('接受邀請失敗：'+error.message);return;}history.replaceState({},'',location.pathname);alert('已加入旅程！');await loadCloud();}
-async function showMembers(){const t=trip();if(!t)return alert('請先選擇旅程');const {data,error}=await supabaseClient.from('trip_members').select('user_id,role,joined_at').eq('trip_id',t.id);if(error)return alert(error.message);alert('目前成員\n'+(data||[]).map(m=>m.user_id+' · '+m.role).join('\n'))}
-async function signIn(email,password){const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;authSession=data.session;currentUser=data.user;await afterLogin();}
-async function signUp(email,password){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
-async function afterLogin(){if(!currentUser)return;$('authGate').classList.add('hide');$('accountBtn').textContent='登出';$('accountBtn').title=currentUser.email||'';await loadCloud();await acceptInviteFromUrl();}
+
 $('authForm').onsubmit=async e=>{e.preventDefault();$('authMessage').textContent='登入中…';try{await signIn($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('signUpBtn').onclick=async()=>{if(!$('authEmail').value||!$('authPassword').value)return $('authMessage').textContent='請先輸入 Email 和密碼。';$('authMessage').textContent='建立帳號中…';try{await signUp($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('accountBtn').onclick=async()=>{if(!currentUser)return;$('authGate').classList.remove('hide');$('authMessage').textContent='';await supabaseClient.auth.signOut();currentUser=null;authSession=null;cloudReady=false;state.trips=[];state.activeId=null;$('accountBtn').textContent='登入';setSyncStatus('未登入');render();};
 $('inviteTripBtn').onclick=()=>inviteMember().catch(e=>alert(e.message));$('membersBtn').onclick=()=>showMembers();
-const publicShareToken=new URLSearchParams(location.search).get('share');if(publicShareToken){loadPublicShare(publicShareToken);}
+const publicShareToken=new URLSearchParams(location.search).get('share');
+if(publicShareToken)loadPublicShare(publicShareToken);
 supabaseClient.auth.getSession().then(async({data,error})=>{if(error){$('authMessage').textContent=error.message;return;}if(data.session){authSession=data.session;currentUser=data.session.user;try{await afterLogin();}catch(e){console.error(e);$('authGate').classList.remove('hide');$('authMessage').textContent='雲端載入失敗：'+e.message;}}});
 supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session){authSession=session;currentUser=session.user;} });
 $('newTripBtn').onclick=addTrip;$('addCouponBtn').onclick=addCoupon;$('addItineraryBtn').onclick=()=>addItinerary();$('addFlightBtn').onclick=addFlight;$('addDocumentBtn').onclick=addDocument;$('editBudgetBtn').onclick=editBudget;$('addExpenseBtn').onclick=addExpense;$('addPackingBtn').onclick=addPacking;
