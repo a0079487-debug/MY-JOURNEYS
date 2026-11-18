@@ -505,6 +505,28 @@ async function signIn(email,password){const {data,error}=await supabaseClient.au
 async function signUp(email,password){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
 async function afterLogin(){if(!currentUser)return;$('authGate').classList.add('hide');$('accountBtn').textContent='登出';$('accountBtn').title=currentUser.email||'';await loadCloud();await acceptInviteFromUrl();}
 
+async function copyTextCompat(text){
+  // 優先使用 Clipboard API；若網站不是 HTTPS 或瀏覽器拒絕權限，改用傳統複製方式。
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  }catch(err){console.warn('Clipboard API 複製失敗，改用相容方式：',err);}
+  try{
+    const box=document.createElement('textarea');
+    box.value=text;
+    box.setAttribute('readonly','');
+    box.style.position='fixed';
+    box.style.left='-9999px';
+    box.style.top='0';
+    document.body.appendChild(box);
+    box.focus();box.select();box.setSelectionRange(0,box.value.length);
+    const ok=document.execCommand('copy');
+    box.remove();
+    return !!ok;
+  }catch(err){console.warn('傳統複製方式也失敗：',err);return false;}
+}
 async function openPublicShare(){
   const t=trip();if(!t)return alert('請先選擇一趟旅行');
   try{
@@ -514,8 +536,13 @@ async function openPublicShare(){
     const {error}=await supabaseClient.rpc('create_public_trip_share',{p_trip_id:t.id,p_token_hash:hash});
     if(error)throw error;
     const url=location.origin+location.pathname+'?share='+token;
-    try{await navigator.clipboard.writeText(url);}catch(_){}
-    alert('公開唯讀連結已建立：\n'+url+'\n任何持有連結的人都能檢視公開行程。');
+    const copied=await copyTextCompat(url);
+    if(copied){
+      alert('公開唯讀連結已建立，並已複製到剪貼簿！\n\n'+url+'\n\n任何持有連結的人都能檢視公開行程。');
+    }else{
+      // prompt 會將完整網址放在可選取的欄位，確保無法使用剪貼簿時仍可手動複製。
+      window.prompt('公開唯讀連結已建立。請選取下方網址並按 Ctrl+C（手機可長按複製）：',url);
+    }
   }catch(e){console.error(e);alert('建立公開分享失敗：'+e.message+'\n請先執行 Supabase 公開分享 SQL。');}
 }
 async function revokePublicShare(){
