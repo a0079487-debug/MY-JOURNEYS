@@ -303,7 +303,7 @@
 /* Account center */
 .account-backdrop{position:fixed;inset:0;z-index:85;background:#1d211f70;display:none;align-items:center;justify-content:center;padding:16px}
 .account-backdrop.open{display:flex}.account-sheet{width:min(680px,100%);max-height:92vh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 20px 70px #0003}
-.account-profile{display:flex;align-items:center;gap:14px;padding:14px;background:#f5f2e9;border-radius:18px}
+.account-profile{display:flex;align-items:center;gap:14px;padding:14px;background:#f5f2e9;border-radius:18px}.account-code-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--muted)}.account-code-row strong{font-size:13px;letter-spacing:.09em;color:var(--forest);font-variant-numeric:tabular-nums}
 .account-avatar{width:68px;height:68px;border-radius:50%;object-fit:cover;background:#e4e1d7;border:2px solid var(--paper)}
 .account-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
 .account-menu button{display:flex;align-items:center;gap:10px;text-align:left;padding:14px;border:1px solid var(--line);border-radius:15px;background:#fffefa;color:var(--forest)}
@@ -410,14 +410,14 @@
 <div class="auth-gate" id="authGate"><div class="auth-card"><div class="eyebrow">TRAVEL TOGETHER</div><h1>MY JOURNEYS</h1><p class="muted">登入後同步你的旅程，並與旅伴共同規劃。</p><form id="authForm"><div class="field"><label>Email</label><input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></div><div class="field"><label>密碼</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="至少 6 個字元"></div><div class="actions"><button class="btn primary" type="submit" id="signInBtn">登入</button><button class="btn" type="button" id="signUpBtn">建立帳號</button><button class="btn" type="button" id="forgotPasswordBtn">忘記密碼？</button></div></form><div class="auth-message" id="authMessage"></div><div id="passwordRecoveryPanel" class="account-section" style="display:none"><h3>設定新密碼</h3><div class="field"><label for="newPasswordInput">新密碼（至少 6 個字元）</label><input id="newPasswordInput" type="password" minlength="6" autocomplete="new-password"></div><button class="btn primary" id="confirmNewPasswordBtn" type="button">更新密碼</button></div><p class="notice">註冊後若啟用 Email 驗證，請先到信箱完成驗證，再回到此頁登入。</p></div></div>
 <div class="account-backdrop" id="accountBackdrop" role="dialog" aria-modal="true" aria-label="帳戶中心"><div class="account-sheet">
   <div class="modal-head"><div><div class="eyebrow">MY ACCOUNT</div><h2 style="margin:5px 0 0">帳戶中心</h2></div><button class="close" id="accountClose">×</button></div>
-  <div class="account-profile"><img id="accountAvatar" class="account-avatar" alt="個人頭像" src=""><div style="min-width:0;flex:1"><strong id="accountNickname">尚未設定暱稱</strong><div class="muted" id="accountEmail" style="font-size:12px;overflow-wrap:anywhere"></div><div class="muted" id="accountProfileHint" style="font-size:11px;margin-top:4px"></div></div><button class="btn small" id="editProfileBtn">編輯</button></div>
+  <div class="account-profile"><img id="accountAvatar" class="account-avatar" alt="個人頭像" src=""><div style="min-width:0;flex:1"><strong id="accountNickname">尚未設定暱稱</strong><div class="muted" id="accountEmail" style="font-size:12px;overflow-wrap:anywhere"></div><div class="account-code-row"><span>專屬分享編碼</span><strong id="accountUserCode">建立中…</strong><button type="button" class="btn small" id="copyUserCodeBtn">複製</button></div><div class="muted" id="accountProfileHint" style="font-size:11px;margin-top:4px"></div></div><button class="btn small" id="editProfileBtn">編輯</button></div>
   <div class="account-menu">
-    <button id="accountInviteBtn"><span><strong>分享行程</strong><small>用 Email 或暱稱邀請旅伴</small></span></button>
+    <button id="accountInviteBtn"><span><strong>分享行程</strong><small>用 Email 或專屬編碼邀請旅伴</small></span></button>
     <button id="accountCopyTripBtn"><span><strong>建立新旅行</strong><small>可挑選舊旅程中的景點複製</small></span></button>
     <button id="accountMembersBtn"><span><strong>成員管理</strong><small>查看目前旅程的共享成員</small></span></button>
     <button id="accountSecurityBtn"><span><strong>登入與安全</strong><small>重設密碼與帳戶安全</small></span></button>
   </div>
-  <div class="account-section" id="accountProfileEditor" style="display:none"><h3>個人資料設定</h3><div class="field"><label for="profileNicknameInput">公開暱稱（需唯一）</label><input id="profileNicknameInput" maxlength="24" placeholder="設定其他旅伴能搜尋到的暱稱"></div><div class="field" style="margin-top:10px"><label for="profileAvatarInput">頭像圖片</label><input id="profileAvatarInput" type="file" accept="image/png,image/jpeg,image/webp"></div><div class="actions"><button class="btn primary" id="saveProfileBtn">儲存個人資料</button><button class="btn" id="cancelProfileBtn">取消</button></div><p class="notice">頭像與暱稱會顯示在共享旅程的成員資訊中。</p></div>
+  <div class="account-section" id="accountProfileEditor" style="display:none"><h3>個人資料設定</h3><div class="field"><label for="profileNicknameInput">公開暱稱（供旅伴辨識，可重複）</label><input id="profileNicknameInput" maxlength="24" placeholder="設定你在旅伴清單中顯示的名稱"></div><div class="field" style="margin-top:10px"><label for="profileAvatarInput">頭像圖片</label><input id="profileAvatarInput" type="file" accept="image/png,image/jpeg,image/webp"></div><div class="actions"><button class="btn primary" id="saveProfileBtn">儲存個人資料</button><button class="btn" id="cancelProfileBtn">取消</button></div><p class="notice">頭像與暱稱會顯示在共享旅程的成員資訊中；邀請請使用專屬分享編碼。</p></div>
   <div class="account-section" id="accountSecurityPanel" style="display:none"><h3>登入與安全</h3><p class="muted" style="font-size:13px">目前使用電子郵件帳戶登入。可寄送密碼重設信至你的註冊信箱。</p><button class="btn" id="sendResetFromAccount">寄送密碼重設信</button><p class="notice">LINE 登入需要先在 LINE Developers 與 Supabase 設定 OAuth Provider，完成設定後才能啟用。</p></div>
   <div class="actions" style="justify-content:space-between"><button class="btn danger" id="accountSignOutBtn">登出帳戶</button><span class="muted" id="accountStatus" style="font-size:11px"></span></div>
 </div></div>
@@ -506,7 +506,8 @@ async function save(){
       if(!data)throw new Error('找不到可編輯的旅程，請確認目前帳號的權限。');
     }
     setSyncStatus('已同步');
-  }catch(e){console.error(e);setSyncStatus('同步失敗');alert('雲端儲存失敗：'+e.message);}
+    return true;
+  }catch(e){console.error(e);setSyncStatus('同步失敗');alert('雲端儲存失敗：'+e.message);return false;}
 }
 async function loadCloud(){setSyncStatus('載入雲端…');const {data,error}=await supabaseClient.from('trips').select('*').order('created_at',{ascending:true});if(error)throw error;state.trips=(data||[]).map(rowToTrip);state.activeId=state.trips[0]?.id||null;cloudReady=true;const local=loadLocal();if(!state.trips.length&&local.trips.length&&confirm('偵測到這台裝置有舊版旅程資料，要將 '+local.trips.length+' 趟旅程匯入雲端嗎？')){for(const old of local.trips){const t={...blankTrip(old),id:crypto.randomUUID(),_ownerId:currentUser.id};const {error:ie}=await supabaseClient.from('trips').insert(tripToRow(t));if(ie)throw ie;}const {data:again,error:ae}=await supabaseClient.from('trips').select('*').order('created_at',{ascending:true});if(ae)throw ae;state.trips=(again||[]).map(rowToTrip);state.activeId=state.trips[0]?.id||null;}setSyncStatus('已同步');render();subscribeRealtime();}
 function subscribeRealtime(){if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);realtimeChannel=supabaseClient.channel('my-journeys-live').on('postgres_changes',{event:'*',schema:'public',table:'trips'},payload=>{const id=payload.new?.id||payload.old?.id;if(!id)return;if(payload.eventType==='DELETE'){state.trips=state.trips.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;}else{const incoming=rowToTrip(payload.new);const i=state.trips.findIndex(t=>t.id===id);if(i<0)state.trips.push(incoming);else state.trips[i]=incoming;if(!state.activeId)state.activeId=id;}render();setSyncStatus('已即時更新');}).subscribe();}
@@ -868,16 +869,39 @@ function addTrip(){
   openForm('新增旅行',[{name:'title',label:'旅行名稱',placeholder:'例如：東京冬日旅行',required:true},{name:'destination',label:'目的地',placeholder:'Tokyo, Japan',required:true},{name:'startDate',label:'出發日期',type:'date',value:new Date().toISOString().slice(0,10),required:true},{name:'endDate',label:'回程日期',type:'date',value:new Date(Date.now()+3*86400000).toISOString().slice(0,10),required:true},{name:'budget',label:'總預算（NT$，選填）',type:'number',value:0},{name:'copyFromTripId',label:'從之前的旅行挑選景點（選填）',type:'select',options:sourceOptions,value:''}],async v=>{
     if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');
     const t=blankTrip({...v,budget:Number(v.budget||0),_ownerId:currentUser.id,_isNew:true,id:crypto.randomUUID()});delete t.copyFromTripId;
-    state.trips.push(t);state.activeId=t.id;state.day=getTodayTripDay(t);await save();render();
-    const source=state.trips.find(x=>x.id===v.copyFromTripId);if(source)openCopyItemsModal(source,t);
+    const targetId=t.id,sourceId=v.copyFromTripId||'';
+    state.trips.push(t);state.activeId=targetId;state.day=getTodayTripDay(t);const saved=await save();render();
+    if(!saved)return;
+    if(sourceId)openCopyItemsModal(sourceId,targetId);
   });
 }
-function openCopyItemsModal(source,target){
+function openCopyItemsModal(sourceId,targetId){
+  // Always resolve current records by ID. Realtime updates can replace trip objects while save() is pending.
+  const source=state.trips.find(x=>x.id===sourceId);
+  const target=state.trips.find(x=>x.id===targetId);
+  if(!source||!target)return alert('找不到來源或新建立的旅行，請重新操作。');
+  if(source.id===target.id)return alert('不能將旅行複製到自己。');
   const items=Array.isArray(source.itinerary)?source.itinerary:[];
-  $('copyItemsDescription').textContent=`從「${source.title}」選擇要複製到「${target.title}」的行程項目。只會複製景點行程資料，不會複製票券、預算或私人附件。`;
+  $('copyItemsDescription').textContent=`從「${source.title}」選擇要複製到「${target.title}」的行程項目。會保留景點名稱、分類、時間、地址、備註及已填寫的詳細資訊；不會複製票券、預算或私人附件。`;
   $('copyItemsList').innerHTML=items.length?items.map((x,i)=>`<label class="copy-check-item"><input type="checkbox" value="${esc(x.id)}" checked><span><strong>${esc(x.title||'未命名行程')}</strong><small class="muted" style="display:block">DAY ${esc(x.day||1)} · ${esc(x.category||'未分類')}${x.location?' · '+esc(x.location):''}</small></span></label>`).join(''):'<div class="empty">這趟舊旅行沒有可複製的行程項目。</div>';
   $('copyItemsBackdrop').classList.add('open');$('copyItemsConfirm').disabled=!items.length;
-  $('copyItemsConfirm').onclick=async()=>{const selected=[...$('copyItemsList').querySelectorAll('input:checked')].map(el=>el.value);const maxDays=Math.max(1,Math.floor((new Date(target.endDate+'T00:00:00')-new Date(target.startDate+'T00:00:00'))/86400000)+1);const copies=items.filter(x=>selected.includes(String(x.id))).map(x=>({...JSON.parse(JSON.stringify(x)),id:uid(),day:Math.min(Math.max(1,Number(x.day)||1),maxDays)}));target.itinerary.push(...copies);await save();render();$('copyItemsBackdrop').classList.remove('open');alert(`已複製 ${copies.length} 個行程項目。你可以再調整日期與順序。`);};
+  $('copyItemsConfirm').onclick=async()=>{
+    const selected=[...$('copyItemsList').querySelectorAll('input:checked')].map(el=>el.value);
+    if(!selected.length)return alert('請至少勾選一個要複製的行程項目。');
+    const currentSource=state.trips.find(x=>x.id===sourceId);
+    const currentTarget=state.trips.find(x=>x.id===targetId);
+    if(!currentSource||!currentTarget)return alert('來源或目的旅行已不存在，請重新操作。');
+    const selectedItems=(currentSource.itinerary||[]).filter(x=>selected.includes(String(x.id)));
+    if(!selectedItems.length)return alert('選取的行程項目已不存在，請重新選擇。');
+    const maxDays=Math.max(1,Math.floor((new Date(currentTarget.endDate+'T00:00:00')-new Date(currentTarget.startDate+'T00:00:00'))/86400000)+1);
+    const copies=selectedItems.map(x=>({...JSON.parse(JSON.stringify(x)),id:uid(),day:Math.min(Math.max(1,Number(x.day)||1),maxDays)}));
+    currentTarget.itinerary.push(...copies);
+    state.activeId=targetId;
+    const saved=await save();
+    if(!saved){const liveTarget=state.trips.find(x=>x.id===targetId);if(liveTarget)liveTarget.itinerary=liveTarget.itinerary.filter(x=>!copies.some(c=>c.id===x.id));render();return;}
+    render();$('copyItemsBackdrop').classList.remove('open');
+    alert(`成功匯入 ${copies.length} 個行程項目到「${currentTarget.title}」。景點詳細資訊也一併保留，你可以再調整日期與順序。`);
+  };
 }
 
 
@@ -1142,10 +1166,11 @@ function exportData(){const blob=new Blob([JSON.stringify({trips:state.trips,act
 function importData(file){const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(!Array.isArray(data.trips))throw Error('格式不正確');state.trips=data.trips;state.activeId=data.activeId||state.trips[0]?.id||null;state.trips.forEach(ensureArrays);save();render();alert('資料還原完成');}catch(e){alert('匯入失敗：請選擇有效的備份 JSON。');}};reader.readAsText(file);}
 async function inviteMember(){
  const t=trip();if(!t)return alert('請先選擇一趟旅程');
- openForm('分享「'+t.title+'」',[{name:'method',label:'邀請方式',type:'select',options:[{value:'email',label:'電子郵件'},{value:'nickname',label:'MY JOURNEYS 暱稱'}],value:'email'},{name:'target',label:'電子郵件或暱稱',placeholder:'輸入對方 Email 或暱稱',required:true,full:true},{name:'role',label:'分享權限',type:'select',options:[{value:'editor',label:'共同編輯'},{value:'viewer',label:'僅檢視'}],value:'viewer'}],async v=>{
-   if(v.method==='nickname'){
-     const {data,error}=await supabaseClient.rpc('invite_trip_member_by_nickname',{p_trip_id:t.id,p_nickname:v.target.trim(),p_role:v.role});if(error)throw error;
-     alert('已將旅程分享給 '+(data?.nickname||v.target)+'，權限：'+(v.role==='editor'?'共同編輯':'僅檢視')+'。');
+ openForm('分享「'+t.title+'」',[{name:'method',label:'邀請方式',type:'select',options:[{value:'email',label:'電子郵件'},{value:'user_code',label:'MY JOURNEYS 專屬編碼'}],value:'email'},{name:'target',label:'電子郵件或專屬編碼',placeholder:'輸入對方 Email 或 MJ-XXXXXXXXXX',required:true,full:true},{name:'role',label:'分享權限',type:'select',options:[{value:'editor',label:'共同編輯'},{value:'viewer',label:'僅檢視'}],value:'viewer'}],async v=>{
+   if(v.method==='user_code'){
+     const code=v.target.trim().toUpperCase();if(!/^MJ-[A-F0-9]{10}$/.test(code))throw new Error('專屬編碼格式不正確，請輸入 MJ- 加上 10 位英數編碼。');
+     const {data,error}=await supabaseClient.rpc('invite_trip_member_by_code',{p_trip_id:t.id,p_user_code:code,p_role:v.role});if(error)throw error;
+     alert('已將旅程分享給 '+(data?.nickname||'該帳戶')+'（'+code+'），權限：'+(v.role==='editor'?'共同編輯':'僅檢視')+'。');
    }else{
      const email=v.target.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(email))throw new Error('請輸入有效的電子郵件地址');
      const token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b=>b.toString(16).padStart(2,'0')).join('');const {error}=await supabaseClient.from('trip_invites').insert({trip_id:t.id,email,role:v.role,token_hash:await sha256(token),created_by:currentUser.id});if(error)throw error;
@@ -1159,11 +1184,17 @@ async function showMembers(){const t=trip();if(!t)return alert('請先選擇旅�
 
 let currentProfile=null;
 const DEFAULT_AVATAR='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="50" fill="#E6E2D7"/><circle cx="50" cy="37" r="18" fill="#8B978D"/><path d="M16 92c4-22 18-32 34-32s30 10 34 32" fill="#8B978D"/></svg>');
-async function loadProfile(){if(!currentUser)return;const {data,error}=await supabaseClient.from('user_profiles').select('user_id,nickname,avatar_url').eq('user_id',currentUser.id).maybeSingle();if(error)throw error;currentProfile=data||{user_id:currentUser.id,nickname:'',avatar_url:''};renderAccountProfile();}
-function renderAccountProfile(){if(!currentUser)return;$('accountNickname').textContent=currentProfile?.nickname||'尚未設定暱稱';$('accountEmail').textContent=currentUser.email||'';$('accountAvatar').src=currentProfile?.avatar_url||DEFAULT_AVATAR;$('accountProfileHint').textContent=currentProfile?.nickname?'你的旅伴可以透過暱稱找到你':'設定唯一暱稱，讓朋友能搜尋並邀請你';$('profileNicknameInput').value=currentProfile?.nickname||'';}
+async function loadProfile(){
+ if(!currentUser)return;
+ let {data,error}=await supabaseClient.from('user_profiles').select('user_id,nickname,avatar_url,user_code').eq('user_id',currentUser.id).maybeSingle();
+ if(error)throw error;
+ if(!data){const created=await supabaseClient.from('user_profiles').upsert({user_id:currentUser.id},{onConflict:'user_id'}).select('user_id,nickname,avatar_url,user_code').single();if(created.error)throw created.error;data=created.data;}
+ currentProfile=data;renderAccountProfile();
+}
+function renderAccountProfile(){if(!currentUser)return;$('accountNickname').textContent=currentProfile?.nickname||'尚未設定暱稱';$('accountEmail').textContent=currentUser.email||'';$('accountAvatar').src=currentProfile?.avatar_url||DEFAULT_AVATAR;$('accountUserCode').textContent=currentProfile?.user_code||'尚未產生';$('accountProfileHint').textContent='邀請旅伴時請使用專屬編碼；暱稱僅供顯示，可與他人重複。';$('profileNicknameInput').value=currentProfile?.nickname||'';}
 function openAccountCenter(){if(!currentUser)return;loadProfile().then(()=>{$('accountBackdrop').classList.add('open');}).catch(e=>alert('讀取個人資料失敗：'+e.message));}
-async function saveProfile(){if(!currentUser)return;const nickname=$('profileNicknameInput').value.trim();if(nickname.length<2||nickname.length>24)return alert('暱稱請輸入 2～24 個字元');let avatarUrl=currentProfile?.avatar_url||'';const file=$('profileAvatarInput').files[0];if(file){if(!/^image\/(png|jpeg|webp)$/.test(file.type))return alert('頭像僅支援 PNG、JPG 或 WebP');if(file.size>3*1024*1024)return alert('頭像圖片請小於 3MB');const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=`${currentUser.id}/avatar-${Date.now()}.${ext}`;const {error:upErr}=await supabaseClient.storage.from('profile-avatars').upload(path,file,{upsert:true,contentType:file.type});if(upErr)throw upErr;const {data}=supabaseClient.storage.from('profile-avatars').getPublicUrl(path);avatarUrl=data.publicUrl;}
- const {data,error}=await supabaseClient.from('user_profiles').upsert({user_id:currentUser.id,nickname,avatar_url:avatarUrl,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select('user_id,nickname,avatar_url').single();if(error)throw error;currentProfile=data;renderAccountProfile();$('accountProfileEditor').style.display='none';$('accountStatus').textContent='個人資料已更新';}
+async function saveProfile(){if(!currentUser)return;const nickname=$('profileNicknameInput').value.trim();if(nickname.length>24)return alert('暱稱最多 24 個字元');let avatarUrl=currentProfile?.avatar_url||'';const file=$('profileAvatarInput').files[0];if(file){if(!/^image\/(png|jpeg|webp)$/.test(file.type))return alert('頭像僅支援 PNG、JPG 或 WebP');if(file.size>3*1024*1024)return alert('頭像圖片請小於 3MB');const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=`${currentUser.id}/avatar-${Date.now()}.${ext}`;const {error:upErr}=await supabaseClient.storage.from('profile-avatars').upload(path,file,{upsert:true,contentType:file.type});if(upErr)throw upErr;const {data}=supabaseClient.storage.from('profile-avatars').getPublicUrl(path);avatarUrl=data.publicUrl;}
+ const {data,error}=await supabaseClient.from('user_profiles').upsert({user_id:currentUser.id,nickname,avatar_url:avatarUrl,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select('user_id,nickname,avatar_url,user_code').single();if(error)throw error;currentProfile=data;renderAccountProfile();$('accountProfileEditor').style.display='none';$('accountStatus').textContent='個人資料已更新';}
 async function sendPasswordReset(email){if(!email)return alert('請先輸入註冊時使用的 Email');const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;alert('密碼重設信已寄出，請到信箱查看（也請檢查垃圾郵件）。');}
 async function copyTripFromAccount(){ $('accountBackdrop').classList.remove('open');addTrip(); }
 async function signIn(email,password){const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;authSession=data.session;currentUser=data.user;await afterLogin();}
@@ -1242,7 +1273,7 @@ $('authForm').onsubmit=async e=>{e.preventDefault();$('authMessage').textContent
 $('signUpBtn').onclick=async()=>{if(!$('authEmail').value||!$('authPassword').value)return $('authMessage').textContent='請先輸入 Email 和密碼。';$('authMessage').textContent='建立帳號中…';try{await signUp($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('accountBtn').onclick=()=>{if(currentUser)openAccountCenter();else $('authGate').classList.remove('hide');};
 $('accountClose').onclick=()=>$('accountBackdrop').classList.remove('open');$('accountBackdrop').onclick=e=>{if(e.target===$('accountBackdrop'))$('accountBackdrop').classList.remove('open');};
-$('editProfileBtn').onclick=()=>{$('accountProfileEditor').style.display='block';$('accountSecurityPanel').style.display='none';};$('cancelProfileBtn').onclick=()=>$('accountProfileEditor').style.display='none';$('saveProfileBtn').onclick=()=>saveProfile().catch(e=>alert('儲存失敗：'+(e.message.includes('duplicate')?'這個暱稱已被使用':e.message)));
+$('copyUserCodeBtn').onclick=async()=>{const code=currentProfile?.user_code;if(!code)return alert('尚未取得專屬編碼，請重新開啟帳戶中心。');const ok=await copyTextCompat(code);if(ok)alert('已複製你的專屬編碼：'+code);else window.prompt('請複製你的專屬編碼：',code);};$('editProfileBtn').onclick=()=>{$('accountProfileEditor').style.display='block';$('accountSecurityPanel').style.display='none';};$('cancelProfileBtn').onclick=()=>$('accountProfileEditor').style.display='none';$('saveProfileBtn').onclick=()=>saveProfile().catch(e=>alert('儲存失敗：'+e.message));
 $('accountSecurityBtn').onclick=()=>{$('accountSecurityPanel').style.display=$('accountSecurityPanel').style.display==='none'?'block':'none';$('accountProfileEditor').style.display='none';};$('sendResetFromAccount').onclick=()=>sendPasswordReset(currentUser?.email).catch(e=>alert(e.message));
 $('forgotPasswordBtn').onclick=()=>sendPasswordReset($('authEmail').value.trim()).catch(e=>$('authMessage').textContent=e.message);
 $('confirmNewPasswordBtn').onclick=async()=>{const password=$('newPasswordInput').value;if(password.length<6)return $('authMessage').textContent='新密碼至少需要 6 個字元。';const {error}=await supabaseClient.auth.updateUser({password});if(error)return $('authMessage').textContent=error.message;$('passwordRecoveryPanel').style.display='none';$('authMessage').textContent='密碼已更新，請使用新密碼登入。';await supabaseClient.auth.signOut();currentUser=null;authSession=null;$('accountBtn').textContent='登入';};
