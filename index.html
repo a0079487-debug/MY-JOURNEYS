@@ -1198,7 +1198,37 @@ async function saveProfile(){if(!currentUser)return;const nickname=$('profileNic
 async function sendPasswordReset(email){if(!email)return alert('請先輸入註冊時使用的 Email');const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;alert('密碼重設信已寄出，請到信箱查看（也請檢查垃圾郵件）。');}
 async function copyTripFromAccount(){ $('accountBackdrop').classList.remove('open');addTrip(); }
 async function signIn(email,password){const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;authSession=data.session;currentUser=data.user;await afterLogin();}
-async function signUp(email,password){const {data,error}=await supabaseClient.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});if(error)throw error;if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}else $('authMessage').textContent='註冊成功！請到信箱點擊驗證連結，再回來登入。';}
+let signUpInProgress=false;
+async function signUp(email,password){
+  if(signUpInProgress)return;
+  const normalizedEmail=String(email||'').trim().toLowerCase();
+  if(!normalizedEmail||!password)throw new Error('請輸入 Email 和密碼。');
+  if(password.length<6)throw new Error('密碼至少需要 6 個字元。');
+  signUpInProgress=true;
+  const signUpButton=$('signUpBtn');
+  if(signUpButton){signUpButton.disabled=true;signUpButton.textContent='處理中…';}
+  try{
+    const {data,error}=await supabaseClient.auth.signUp({email:normalizedEmail,password,options:{emailRedirectTo:location.origin+location.pathname+(new URLSearchParams(location.search).get('invite')?'?invite='+encodeURIComponent(new URLSearchParams(location.search).get('invite')):'')}});
+    if(error){
+      const message=String(error.message||'').toLowerCase();
+      if(message.includes('already registered')||message.includes('already been registered')||message.includes('user already exists')){
+        $('authMessage').textContent='這個 Email 已經註冊過，系統不會再次寄送註冊驗證信。請直接登入；如果忘記密碼，請使用「忘記密碼？」。';
+        return;
+      }
+      throw error;
+    }
+    // Supabase 在啟用 Email 驗證時，會以空 identities 隱藏已註冊帳號；此時不會寄出第二封註冊信。
+    if(data.user && Array.isArray(data.user.identities) && data.user.identities.length===0){
+      $('authMessage').textContent='這個 Email 已經註冊過或已提交註冊，系統不會再次寄送註冊驗證信。請直接登入；如果忘記密碼，請使用「忘記密碼？」。';
+      return;
+    }
+    if(data.session){authSession=data.session;currentUser=data.user;await afterLogin();}
+    else $('authMessage').textContent='註冊申請已送出。若這個 Email 尚未註冊，請到信箱完成驗證；若已經有帳戶，系統不會重複寄送註冊信。';
+  }finally{
+    signUpInProgress=false;
+    if(signUpButton){signUpButton.disabled=false;signUpButton.textContent='建立帳號';}
+  }
+}
 async function afterLogin(){if(!currentUser)return;$('authGate').classList.add('hide');$('accountBtn').textContent='帳戶';$('accountBtn').title=currentUser.email||'';await loadCloud();await loadProfile();await acceptInviteFromUrl();}
 
 async function copyTextCompat(text){
@@ -1270,7 +1300,7 @@ async function loadPublicShare(token){
 }
 
 $('authForm').onsubmit=async e=>{e.preventDefault();$('authMessage').textContent='登入中…';try{await signIn($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
-$('signUpBtn').onclick=async()=>{if(!$('authEmail').value||!$('authPassword').value)return $('authMessage').textContent='請先輸入 Email 和密碼。';$('authMessage').textContent='建立帳號中…';try{await signUp($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
+$('signUpBtn').onclick=async()=>{if(signUpInProgress)return;if(!$('authEmail').value||!$('authPassword').value)return $('authMessage').textContent='請先輸入 Email 和密碼。';$('authMessage').textContent='正在確認註冊狀態…';try{await signUp($('authEmail').value.trim(),$('authPassword').value);}catch(err){$('authMessage').textContent=err.message;}};
 $('accountBtn').onclick=()=>{if(currentUser)openAccountCenter();else $('authGate').classList.remove('hide');};
 $('accountClose').onclick=()=>$('accountBackdrop').classList.remove('open');$('accountBackdrop').onclick=e=>{if(e.target===$('accountBackdrop'))$('accountBackdrop').classList.remove('open');};
 $('copyUserCodeBtn').onclick=async()=>{const code=currentProfile?.user_code;if(!code)return alert('尚未取得專屬編碼，請重新開啟帳戶中心。');const ok=await copyTextCompat(code);if(ok)alert('已複製你的專屬編碼：'+code);else window.prompt('請複製你的專屬編碼：',code);};$('editProfileBtn').onclick=()=>{$('accountProfileEditor').style.display='block';$('accountSecurityPanel').style.display='none';};$('cancelProfileBtn').onclick=()=>$('accountProfileEditor').style.display='none';$('saveProfileBtn').onclick=()=>saveProfile().catch(e=>alert('儲存失敗：'+e.message));
