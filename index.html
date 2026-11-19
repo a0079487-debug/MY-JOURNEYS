@@ -217,6 +217,25 @@
   .timeline-axis:after{right:-16px;top:18px}
 }
 
+
+/* 分類標籤維持原本透黃色底；只有時間軸圓點使用四色 */
+.category-badge,
+.category-badge.itinerary,.category-badge.transport,.category-badge.food,
+.category-badge.ticket,.category-badge.shopping,.category-badge.neutral{
+  background:rgba(197,174,119,.17)!important;
+  color:#65634F!important;
+  border:1px solid rgba(179,154,106,.24)!important;
+}
+.timeline-axis{font-size:16px!important;font-weight:700!important;line-height:1.4!important;color:#4D574F!important;padding-top:15px!important;letter-spacing:.02em}
+.timeline-axis.unscheduled{font-size:12px!important;font-weight:600!important;color:#85877F!important}
+.timeline-axis:after{background:#B39A6A!important;border:3px solid var(--cream)!important;box-shadow:0 0 0 1px #B39A6A!important;width:10px!important;height:10px!important}
+.timeline-axis.dot-transport:after{background:#536B60!important;box-shadow:0 0 0 1px #536B60!important}
+.timeline-axis.dot-food:after{background:#B39A6A!important;box-shadow:0 0 0 1px #B39A6A!important}
+.timeline-axis.dot-ticket:after{background:#71899B!important;box-shadow:0 0 0 1px #71899B!important}
+.timeline-axis.dot-shopping:after{background:#A87570!important;box-shadow:0 0 0 1px #A87570!important}
+.timeline-axis.dot-itinerary:after{background:#536B60!important;box-shadow:0 0 0 1px #536B60!important}
+.timeline-axis.dot-neutral:after{background:#B39A6A!important;box-shadow:0 0 0 1px #B39A6A!important}
+@media(max-width:720px){.timeline-axis{font-size:15px!important}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
@@ -1034,18 +1053,3 @@ render();setSyncStatus('請先登入');
 </script>
 </body>
 </html>
-
-
-/* 最終視覺微調：分類標籤恢復透黃色底，四色只套用時間軸圓點 */
-.category-badge{background:rgba(197,174,119,.17)!important;color:#65634F!important;border:1px solid rgba(179,154,106,.24)}
-.category-badge.itinerary,.category-badge.transport,.category-badge.food,.category-badge.ticket,.category-badge.shopping,.category-badge.neutral{background:rgba(197,174,119,.17)!important;color:#65634F!important}
-.timeline-axis{font-size:16px!important;font-weight:700!important;line-height:1.4;color:#4D574F!important;padding-top:15px;letter-spacing:.02em}
-.timeline-axis.unscheduled{font-size:12px!important;font-weight:600!important;color:#85877F!important}
-.timeline-axis:after{background:#B39A6A!important;border:3px solid var(--cream)!important;box-shadow:0 0 0 1px #B39A6A!important;width:10px;height:10px}
-.timeline-axis.dot-transport:after{background:#536B60!important;box-shadow:0 0 0 1px #536B60!important}
-.timeline-axis.dot-food:after{background:#B39A6A!important;box-shadow:0 0 0 1px #B39A6A!important}
-.timeline-axis.dot-ticket:after{background:#71899B!important;box-shadow:0 0 0 1px #71899B!important}
-.timeline-axis.dot-shopping:after{background:#A87570!important;box-shadow:0 0 0 1px #A87570!important}
-.timeline-axis.dot-itinerary:after{background:#536B60!important;box-shadow:0 0 0 1px #536B60!important}
-.timeline-axis.dot-neutral:after{background:#B39A6A!important;box-shadow:0 0 0 1px #B39A6A!important}
-@media(max-width:720px){.timeline-axis{font-size:15px!important}}
