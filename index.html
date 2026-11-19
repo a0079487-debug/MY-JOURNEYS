@@ -315,6 +315,9 @@
 .copy-check-item input{width:18px;margin-top:2px}.profile-preview{display:flex;align-items:center;gap:12px}
 @media(max-width:560px){.account-menu{grid-template-columns:1fr}.account-sheet{padding:16px}}
 
+
+.day-pill.drop-target{outline:2px dashed var(--forest);outline-offset:3px;background:#e8e1d1;color:var(--forest);transform:translateY(-2px)}
+.item-row.over{outline:2px dashed var(--forest);outline-offset:2px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
@@ -576,7 +579,7 @@ function renderItinerary(){
   if(!t){$('dayStrip').innerHTML='';$('itineraryList').innerHTML='<div class="empty">請先在首頁新增旅行。</div>';return;}
   const days=Math.max(1,Math.min(60,Math.floor((new Date(t.endDate+'T00:00:00')-new Date(t.startDate+'T00:00:00'))/86400000)+1));
   state.day=Math.min(state.day,days);
-  $('dayStrip').innerHTML=Array.from({length:days},(_,i)=>{const d=new Date(t.startDate+'T00:00:00');d.setDate(d.getDate()+i);return `<button class="day-pill ${state.day===i+1?'active':''}" onclick="setDay(${i+1})"><small>DAY ${i+1}</small>${d.getMonth()+1}/${d.getDate()}</button>`}).join('');
+  $('dayStrip').innerHTML=Array.from({length:days},(_,i)=>{const d=new Date(t.startDate+'T00:00:00');d.setDate(d.getDate()+i);return `<button class="day-pill ${state.day===i+1?'active':''}" data-day="${i+1}" onclick="setDay(${i+1})" ondragover="dayPillDragOver(event)" ondragleave="dayPillDragLeave(event)" ondrop="dropOnDay(event,${i+1})"><small>DAY ${i+1}</small>${d.getMonth()+1}/${d.getDate()}</button>`}).join('');
   const list=t.itinerary.filter(x=>Number(x.day)===state.day);
   $('itineraryList').classList.add('timeline-list');
   $('itineraryList').innerHTML=list.length?list.map((x,index)=>`<div class="timeline-entry"><div class="timeline-axis ${x.time?'':'unscheduled'} dot-${itineraryColorKey(x.category)}">${x.time?esc(x.time):'未指定時間'}</div><div class="item-row" draggable="true" data-id="${x.id}" ondragstart="dragStart(event)" ondragend="dragEnd(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropItem(event)"><div class="drag" title="按住拖曳以調整順序" aria-label="拖曳排序">⠿</div><div class="item-main"><div class="itinerary-open" onclick="showItineraryDetail('${x.id}')"><span class="category-badge ${itineraryColorKey(x.category)}">${sketchIcon(x.category)}${esc(x.category)}</span><div class="itinerary-title-row"><strong>${esc(x.title)}</strong>${x.details&&Object.values(x.details).some(v=>String(v||'').trim())?'<small class="detail-ready">已補充資訊</small>':''}</div>${x.location?`<small>${esc(x.location)}</small>`:''}${x.note?`<small>${esc(x.note)}</small>`:''}<div class="itinerary-open-hint">查看完整旅遊資訊　›</div></div>${x.location?`<a class="link" target="_blank" rel="noopener" href="${mapUrl(x.location)}">導航</a>`:''}</div><div class="item-actions"><button class="move-btn" title="上移" aria-label="上移" ${index===0?'disabled':''} onclick="moveItinerary('${x.id}',-1)">↑</button><button class="move-btn" title="下移" aria-label="下移" ${index===list.length-1?'disabled':''} onclick="moveItinerary('${x.id}',1)">↓</button><button onclick="editItinerary('${x.id}')">編輯</button><button onclick="removeItem('itinerary','${x.id}')">刪除</button></div></div></div>`).join(''):'<div class="empty">這一天還沒有安排活動。<br>時間可以留白，先把想去的地方放進來。</div>';
@@ -1126,9 +1129,47 @@ function dragStart(e){
   // Some browsers require dataTransfer data for native drag-and-drop to start.
   e.dataTransfer.setData('text/plain',draggedId);
 }
-function dragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.item-row.over').forEach(el=>el.classList.remove('over'));draggedId=null;}
+function dragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.item-row.over,.day-pill.drop-target').forEach(el=>el.classList.remove('over','drop-target'));
+  draggedId=null;
+}
 function dragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';e.currentTarget.classList.add('over');}
 function dragLeave(e){if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.classList.remove('over');}
+function dayPillDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  e.currentTarget.classList.add('drop-target');
+}
+function dayPillDragLeave(e){
+  if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.classList.remove('drop-target');
+}
+// 拖曳排序後，受影響日期的所有行程依新順序重新配置時間。
+// 一般以 09:00 起算、每筆間隔 90 分鐘；行程較多時縮短間隔，避免時間超出當日。
+function rescheduleItineraryDay(day){
+  const items=trip().itinerary.filter(x=>Number(x.day)===Number(day));
+  const count=items.length;
+  const interval=count>13?45:(count>9?60:90);
+  const startMinutes=9*60;
+  items.forEach((item,index)=>{
+    const total=startMinutes+index*interval;
+    const hh=String(Math.floor(total/60)%24).padStart(2,'0');
+    const mm=String(total%60).padStart(2,'0');
+    item.time=`${hh}:${mm}`;
+  });
+}
+async function saveItineraryReorder(previousItems, affectedDays){
+  const t=trip();
+  affectedDays.forEach(rescheduleItineraryDay);
+  const saved=await save();
+  if(saved===false){
+    t.itinerary=previousItems;
+    renderItinerary();
+    return false;
+  }
+  renderItinerary();
+  return true;
+}
 async function dropItem(e){
   e.preventDefault();
   const target=e.currentTarget;
@@ -1136,20 +1177,49 @@ async function dropItem(e){
   const t=trip();
   const sourceId=draggedId||e.dataTransfer.getData('text/plain');
   if(!t||!sourceId)return;
-  const list=t.itinerary.filter(x=>Number(x.day)===state.day);
+  const source=t.itinerary.find(x=>String(x.id)===String(sourceId));
+  const targetItem=t.itinerary.find(x=>String(x.id)===String(target.dataset.id));
+  if(!source||!targetItem||source.id===targetItem.id)return;
+  const previousItems=t.itinerary.map(x=>({...x}));
+  const sourceDay=Number(source.day);
+  const targetDay=Number(targetItem.day);
+  if(sourceDay!==targetDay)return;
+  const list=t.itinerary.filter(x=>Number(x.day)===targetDay);
   const from=list.findIndex(x=>x.id===sourceId);
-  const to=list.findIndex(x=>x.id===target.dataset.id);
-  if(from<0||to<0||from===to){dragEnd({currentTarget:document.querySelector(`[data-id="${sourceId}"]` )||target});return;}
   const moved=list.splice(from,1)[0];
-  const targetIndex=list.findIndex(x=>x.id===target.dataset.id);
+  const targetIndex=list.findIndex(x=>x.id===targetItem.id);
   const rect=target.getBoundingClientRect();
   const insertAfter=e.clientY>rect.top+rect.height/2;
   list.splice(targetIndex+(insertAfter?1:0),0,moved);
-  const other=t.itinerary.filter(x=>Number(x.day)!==state.day);
+  const other=t.itinerary.filter(x=>Number(x.day)!==targetDay);
   t.itinerary=[...other,...list];
   draggedId=null;
-  await save();
-  renderItinerary();
+  await saveItineraryReorder(previousItems,[targetDay]);
+}
+async function dropOnDay(e,targetDay){
+  e.preventDefault();
+  const pill=e.currentTarget;
+  pill.classList.remove('drop-target');
+  const t=trip();
+  const sourceId=draggedId||e.dataTransfer.getData('text/plain');
+  if(!t||!sourceId)return;
+  const moved=t.itinerary.find(x=>String(x.id)===String(sourceId));
+  if(!moved)return;
+  const sourceDay=Number(moved.day);
+  const destinationDay=Number(targetDay);
+  if(sourceDay===destinationDay){draggedId=null;return;}
+  const previousItems=t.itinerary.map(x=>({...x}));
+  // 跨日拖曳預設放在目的日最後一筆，並重新安排來源日與目的日的時間。
+  moved.day=destinationDay;
+  const reordered=[];
+  for(let day=1;day<=60;day++){
+    const dayItems=t.itinerary.filter(x=>Number(x.day)===day);
+    if(dayItems.length)reordered.push(...dayItems);
+  }
+  t.itinerary=reordered;
+  draggedId=null;
+  state.day=destinationDay;
+  await saveItineraryReorder(previousItems,[sourceDay,destinationDay]);
 }
 async function moveItinerary(id,direction){
   const t=trip();
@@ -1158,11 +1228,11 @@ async function moveItinerary(id,direction){
   const index=list.findIndex(x=>x.id===id);
   const next=index+direction;
   if(index<0||next<0||next>=list.length)return;
+  const previousItems=t.itinerary.map(x=>({...x}));
   [list[index],list[next]]=[list[next],list[index]];
   const other=t.itinerary.filter(x=>Number(x.day)!==state.day);
   t.itinerary=[...other,...list];
-  await save();
-  renderItinerary();
+  await saveItineraryReorder(previousItems,[state.day]);
 }
 function exportData(){const blob=new Blob([JSON.stringify({trips:state.trips,activeId:state.activeId},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-journeys-backup.json';a.click();URL.revokeObjectURL(a.href);}
 function importData(file){const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(!Array.isArray(data.trips))throw Error('格式不正確');state.trips=data.trips;state.activeId=data.activeId||state.trips[0]?.id||null;state.trips.forEach(ensureArrays);save();render();alert('資料還原完成');}catch(e){alert('匯入失敗：請選擇有效的備份 JSON。');}};reader.readAsText(file);}
