@@ -173,6 +173,50 @@
 .detail-fact-card strong{display:block;margin-top:5px;color:var(--forest)}
 @media(max-width:720px){.itinerary-detail-block{padding:12px}}
 
+
+
+/* 時間軸專屬分類色：其餘分類標籤維持原本配色 */
+.category-badge.itinerary{background:#87534E}
+.category-badge.transport{background:#426B59}
+.category-badge.food{background:#94733C}
+.category-badge.ticket{background:#4C6680}
+.category-badge.shopping{background:#765940}
+.category-badge.neutral{background:var(--forest)}
+
+.timeline-axis{
+  font-size:16px;
+  line-height:1.35;
+  font-weight:750;
+  letter-spacing:.015em;
+  color:#454A45;
+  padding-top:14px;
+}
+.timeline-axis:after{
+  width:11px;
+  height:11px;
+  right:-19px;
+  top:19px;
+  background:#71816E;
+  border:3px solid var(--cream);
+  box-shadow:0 0 0 1.5px #71816E;
+}
+.timeline-axis.dot-itinerary:after{background:#A87570;box-shadow:0 0 0 1.5px #A87570}
+.timeline-axis.dot-transport:after{background:#536B60;box-shadow:0 0 0 1.5px #536B60}
+.timeline-axis.dot-food:after{background:#B39A6A;box-shadow:0 0 0 1.5px #B39A6A}
+.timeline-axis.dot-ticket:after{background:#71899B;box-shadow:0 0 0 1.5px #71899B}
+.timeline-axis.dot-shopping:after{background:#A87570;box-shadow:0 0 0 1.5px #A87570}
+.timeline-axis.dot-neutral:after{background:#8B8A80;box-shadow:0 0 0 1.5px #8B8A80}
+.timeline-axis.dot-itinerary{color:#87534E}
+.timeline-axis.dot-transport{color:#426B59}
+.timeline-axis.dot-food{color:#94733C}
+.timeline-axis.dot-ticket{color:#4C6680}
+.timeline-axis.dot-shopping{color:#765940}
+.timeline-axis.unscheduled{font-size:12px;font-weight:550;color:var(--muted)}
+@media(max-width:720px){
+  .timeline-axis{font-size:15px;padding-top:14px}
+  .timeline-axis:after{right:-16px;top:18px}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
@@ -410,7 +454,7 @@ function renderItinerary(){
   $('dayStrip').innerHTML=Array.from({length:days},(_,i)=>{const d=new Date(t.startDate+'T00:00:00');d.setDate(d.getDate()+i);return `<button class="day-pill ${state.day===i+1?'active':''}" onclick="setDay(${i+1})"><small>DAY ${i+1}</small>${d.getMonth()+1}/${d.getDate()}</button>`}).join('');
   const list=t.itinerary.filter(x=>Number(x.day)===state.day);
   $('itineraryList').classList.add('timeline-list');
-  $('itineraryList').innerHTML=list.length?list.map((x,index)=>`<div class="timeline-entry"><div class="timeline-axis ${x.time?'':'unscheduled'}">${x.time?esc(x.time):'未指定時間'}</div><div class="item-row" draggable="true" data-id="${x.id}" ondragstart="dragStart(event)" ondragend="dragEnd(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropItem(event)"><div class="drag" title="按住拖曳以調整順序" aria-label="拖曳排序">⠿</div><div class="item-main"><div class="itinerary-open" onclick="showItineraryDetail('${x.id}')"><span class="category-badge ${itineraryColorKey(x.category)}">${sketchIcon(x.category)}${esc(x.category)}</span><div class="itinerary-title-row"><strong>${esc(x.title)}</strong>${x.details&&Object.values(x.details).some(v=>String(v||'').trim())?'<small class="detail-ready">已補充資訊</small>':''}</div>${x.location?`<small>${esc(x.location)}</small>`:''}${x.note?`<small>${esc(x.note)}</small>`:''}<div class="itinerary-open-hint">查看完整旅遊資訊　›</div></div>${x.location?`<a class="link" target="_blank" rel="noopener" href="${mapUrl(x.location)}">導航</a>`:''}</div><div class="item-actions"><button class="move-btn" title="上移" aria-label="上移" ${index===0?'disabled':''} onclick="moveItinerary('${x.id}',-1)">↑</button><button class="move-btn" title="下移" aria-label="下移" ${index===list.length-1?'disabled':''} onclick="moveItinerary('${x.id}',1)">↓</button><button onclick="editItinerary('${x.id}')">編輯</button><button onclick="removeItem('itinerary','${x.id}')">刪除</button></div></div></div>`).join(''):'<div class="empty">這一天還沒有安排活動。<br>時間可以留白，先把想去的地方放進來。</div>';
+  $('itineraryList').innerHTML=list.length?list.map((x,index)=>`<div class="timeline-entry"><div class="timeline-axis ${x.time?'':'unscheduled'} dot-${itineraryColorKey(x.category)}">${x.time?esc(x.time):'未指定時間'}</div><div class="item-row" draggable="true" data-id="${x.id}" ondragstart="dragStart(event)" ondragend="dragEnd(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropItem(event)"><div class="drag" title="按住拖曳以調整順序" aria-label="拖曳排序">⠿</div><div class="item-main"><div class="itinerary-open" onclick="showItineraryDetail('${x.id}')"><span class="category-badge ${itineraryColorKey(x.category)}">${sketchIcon(x.category)}${esc(x.category)}</span><div class="itinerary-title-row"><strong>${esc(x.title)}</strong>${x.details&&Object.values(x.details).some(v=>String(v||'').trim())?'<small class="detail-ready">已補充資訊</small>':''}</div>${x.location?`<small>${esc(x.location)}</small>`:''}${x.note?`<small>${esc(x.note)}</small>`:''}<div class="itinerary-open-hint">查看完整旅遊資訊　›</div></div>${x.location?`<a class="link" target="_blank" rel="noopener" href="${mapUrl(x.location)}">導航</a>`:''}</div><div class="item-actions"><button class="move-btn" title="上移" aria-label="上移" ${index===0?'disabled':''} onclick="moveItinerary('${x.id}',-1)">↑</button><button class="move-btn" title="下移" aria-label="下移" ${index===list.length-1?'disabled':''} onclick="moveItinerary('${x.id}',1)">↓</button><button onclick="editItinerary('${x.id}')">編輯</button><button onclick="removeItem('itinerary','${x.id}')">刪除</button></div></div></div>`).join(''):'<div class="empty">這一天還沒有安排活動。<br>時間可以留白，先把想去的地方放進來。</div>';
 }
 function renderMap(){const t=trip();$('mapSubtitle').textContent=t?`${t.title} · ${t.destination}`:'';$('mapDestination').textContent=t?.destination||'尚未設定目的地';const places=t?t.itinerary.filter(x=>x.location).sort((a,b)=>Number(a.day)-Number(b.day)):[];const options='<option value="">請選擇</option>'+places.map(x=>`<option value="${esc(x.id)}">${esc(x.title)}</option>`).join('');const from=$('routeFrom').value,to=$('routeTo').value;$('routeFrom').innerHTML=options;$('routeTo').innerHTML=options;if(places.some(x=>x.id===from))$('routeFrom').value=from;else if(places.length)$('routeFrom').value=places[0].id;if(places.some(x=>x.id===to))$('routeTo').value=to;else if(places.length>1)$('routeTo').value=places[1].id;updateRoutePreview();$('mapPlaces').innerHTML=t?places.map(x=>`<div class="item-row"><div class="item-main"><span class="category-badge ${itineraryColorKey(x.category)}">${sketchIcon(x.category)}DAY ${x.day} · ${esc(x.category)}</span><strong>${esc(x.title)}</strong><small>${esc(x.location)}</small></div><button class="btn small" type="button" onclick="setRouteDestination('${esc(x.id)}')">設為目的地</button><a class="btn small" target="_blank" rel="noopener" href="${mapUrl(x.location)}">導航 ↗</a></div>`).join('')||'<div class="empty">在行程中加入地點後，這裡會整理導航入口。</div>':'<div class="empty">請先建立旅行。</div>'; }
 let selectedRouteMode='transit';const routeModeNames={transit:'大眾運輸',driving:'開車',walking:'步行',bicycling:'自行車'};function selectedRouteItem(value){return trip()?.itinerary.find(x=>x.id===value);}function updateRoutePreview(){const from=selectedRouteItem($('routeFrom').value),to=selectedRouteItem($('routeTo').value);$('routeFromPreview').textContent=from?.title||'選擇起點';$('routeToPreview').textContent=to?.title||'選擇終點';$('routeModePreview').textContent=routeModeNames[selectedRouteMode];}function setRouteDestination(id){$('routeTo').value=id;updateRoutePreview();}function resolveRoutePlace(value){return selectedRouteItem(value)?.location||'';}function routeUrl(){const from=$('routeFrom').value,to=$('routeTo').value;if(!from||!to){alert('請選擇出發地與目的地');return null;}if(from===to){alert('出發地與目的地不能相同');return null;}const params=new URLSearchParams({api:'1',origin:resolveRoutePlace(from),destination:resolveRoutePlace(to),travelmode:selectedRouteMode});return 'https://www.google.com/maps/dir/?'+params.toString();}function addRouteToItinerary(){const t=trip();if(!t)return alert('請先建立或選擇一趟旅行');const from=$('routeFrom').value,to=$('routeTo').value;if(!routeUrl())return;const fromItem=selectedRouteItem(from),toItem=selectedRouteItem(to);const day=Number(state.day)||1;t.itinerary.push({id:uid(),title:`${fromItem.title} → ${toItem.title}`,category:'交通',day,time:'',location:toItem.location,note:`交通方式：${routeModeNames[selectedRouteMode]}；出發地：${fromItem.location}`});save();render();alert('已加入當日行程。');}$('routeFrom').addEventListener('change',updateRoutePreview);$('routeTo').addEventListener('change',updateRoutePreview);$('routeSwap').onclick=()=>{const a=$('routeFrom').value;$('routeFrom').value=$('routeTo').value;$('routeTo').value=a;updateRoutePreview();};$('routeModes').onclick=e=>{const b=e.target.closest('button[data-mode]');if(!b)return;selectedRouteMode=b.dataset.mode;document.querySelectorAll('.route-mode').forEach(x=>x.classList.toggle('active',x===b));updateRoutePreview();};$('routeOpenMaps').onclick=()=>{const url=routeUrl();if(url)window.open(url,'_blank','noopener,noreferrer');};$('routeAddToItinerary').onclick=addRouteToItinerary;$('routeReset').onclick=()=>{$('routeFrom').value='';$('routeTo').value='';selectedRouteMode='transit';document.querySelectorAll('.route-mode').forEach(x=>x.classList.toggle('active',x.dataset.mode==='transit'));updateRoutePreview();};
@@ -755,8 +799,8 @@ function showItineraryDetail(id){
   if(!hadDetails&&x.details&&Object.values(x.details).some(v=>String(v||'').trim()))save();
   const d=x.details||{};
   $('itineraryDetailTitle').textContent=x.title||'行程詳細資訊';
-  const category=String(x.category||'').includes('交通')?'transport':normalizeGuideCategory(x.category);
-  const categoryLabel=category==='transport'?'交通 TRANSPORT':category==='food'?'美食 FOOD':category==='play'?'景點 PLAY':category==='shop'?'購物 SHOP':(x.category||'行程');
+  const category=normalizeGuideCategory(x.category);
+  const categoryLabel=category==='food'?'美食 FOOD':category==='play'?'景點 PLAY':category==='shop'?'購物 SHOP':(x.category||'行程');
   const detailLabels={
     hours:'營業／開放時間',price:'價格／預算',duration:'建議停留時間',
     cuisine:'料理類型',signature:'推薦餐點／必點品項',reservation:'訂位／預約資訊',
