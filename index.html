@@ -61,6 +61,22 @@
   .item-main .itinerary-time{font-size:17px!important}
 }
 
+
+.guide-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;background:var(--paper);border:1px solid var(--line);border-radius:17px;padding:16px}
+.guide-card h3{margin:8px 0 5px}.guide-meta{font-size:12px;color:var(--muted);line-height:1.7}.guide-detail{white-space:pre-wrap;line-height:1.75;font-size:13px;margin-top:10px}.guide-card .actions{margin-top:10px}
+@media(max-width:720px){.bottom-nav{gap:1px}.nav-btn{padding:7px 3px;min-width:0;flex:1}.nav-btn span{font-size:9px}.nav-btn .sketch-icon{width:18px;height:18px}}
+
+
+/* 旅遊使用說明書：藍／綠／咖啡分類主題色 */
+#guideSegments button[data-guide-category="food"].active{background:#5B91B8;color:#FFFCF6;border-color:#5B91B8;box-shadow:0 3px 10px rgba(91,145,184,.20)}
+#guideSegments button[data-guide-category="play"].active{background:#64866B;color:#FFFCF6;border-color:#64866B;box-shadow:0 3px 10px rgba(100,134,107,.20)}
+#guideSegments button[data-guide-category="shop"].active{background:#92705A;color:#FFFCF6;border-color:#92705A;box-shadow:0 3px 10px rgba(146,112,90,.20)}
+#guideSegments button[data-guide-category="all"].active{background:var(--forest);color:var(--paper);border-color:var(--forest)}
+.guide-category-badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:650;letter-spacing:.03em}
+.guide-category-badge.cat-food{background:#E5EFF6;color:#477FA7}
+.guide-category-badge.cat-play{background:#E7EEE5;color:#52765A}
+.guide-category-badge.cat-shop{background:#F0E8E1;color:#80604B}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
@@ -145,6 +161,19 @@
       <div class="section-head"><h2>行李清單</h2><button class="btn primary small" id="addPackingBtn">＋ 新增物品</button></div><div id="packingProgress"></div><div class="item-list" id="packingList"></div>
     </div>
   </section>
+
+  <section id="guidePanel" class="panel">
+    <div class="hero"><div><div class="eyebrow">TRAVEL HANDBOOK</div><h1>旅遊使用說明書</h1><div class="muted" id="guideSubtitle">整理這趟旅行的吃、玩、逛攻略</div></div><button class="btn primary" id="addGuideBtn">＋ 新增攻略</button></div>
+    <div class="card" style="margin-bottom:14px">
+      <input id="guideSearch" type="search" placeholder="搜尋地點、餐廳、店家或攻略內容…">
+      <div class="segmented" id="guideSegments" style="margin:12px 0 0">
+        <button class="active" data-guide-category="all">全部</button><button data-guide-category="food">吃 FOOD</button><button data-guide-category="play">玩 PLAY</button><button data-guide-category="shop">逛 SHOP</button>
+      </div>
+    </div>
+    <div class="section-head"><h2>本趟旅行攻略</h2><span class="muted" id="guideCount">0 個地點</span></div>
+    <div class="item-list" id="guideList"></div>
+  </section>
+
 </main>
 </div>
 
@@ -154,6 +183,7 @@
     <h1 id="publicTripTitle" style="margin:10px 0 4px;">共享行程</h1>
     <p id="publicTripDates" class="muted"></p>
     <div id="publicItinerary"></div>
+    <section id="publicGuideSection" class="hide"><div class="section-head"><h2>旅遊使用說明書</h2></div><div id="publicGuide"></div></section>
     <p class="notice">此頁為唯讀分享，不包含私人票券、預算或帳號資料。</p>
   </div>
 </section>
@@ -163,6 +193,7 @@
   <button class="nav-btn" data-tab="itinerary"><svg class="sketch-icon nav-illustration" viewBox="0 0 32 32" aria-hidden="true"><rect x="6" y="5" width="20" height="23" rx="3"/><path d="M11 11h10M11 16h10M11 21h6M10 3v4m12-4v4"/></svg><span>行程</span></button>
   <button class="nav-btn" data-tab="map"><svg class="sketch-icon nav-illustration" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28s-9-9.4-9-16a9 9 0 1 1 18 0c0 6.6-9 16-9 16Z"/><circle cx="16" cy="12" r="3.2"/></svg><span>地圖</span></button>
   <button class="nav-btn" data-tab="flights"><svg class="sketch-icon nav-illustration" viewBox="0 0 32 32" aria-hidden="true"><path d="m4 18 10-3 4-10q1-2 2 0l1 9 7 3q2 1 0 2l-8 1-4 7q-1 2-2 0l-1-7-9-1q-2-1 0-1Z"/></svg><span>航班</span></button>
+  <button class="nav-btn" data-tab="guide"><svg class="sketch-icon nav-illustration" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 6.5q6-2 11 1v19q-5-3-11-1Z M27 6.5q-6-2-11 1v19q5-3 11-1Z"/><path d="M9 11h4m-4 4h4m6-4h4m-4 4h4"/></svg><span>指南</span></button>
   <button class="nav-btn" data-tab="folder"><svg class="sketch-icon nav-illustration" viewBox="0 0 32 32" aria-hidden="true"><path d="M4.5 9a3 3 0 0 1 3-3h6l3 3h8a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-17a3 3 0 0 1-3-3Z"/><path d="M5 13h22"/></svg><span>資料夾</span></button>
 </nav>
 
@@ -199,12 +230,12 @@ const sketchIcon=(kind)=>{
 
 const money=n=>Number(n||0).toLocaleString('zh-TW',{maximumFractionDigits:2});
 const fmtDate=s=>{if(!s)return '';const d=new Date(s+'T00:00:00');return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`};
-const blankTrip=(data={})=>({id:uid(),title:'',destination:'',startDate:new Date().toISOString().slice(0,10),endDate:new Date(Date.now()+3*86400000).toISOString().slice(0,10),budget:0,itinerary:[],flights:[],documents:[],expenses:[],packing:[],coupons:[],...data});
+const blankTrip=(data={})=>({id:uid(),title:'',destination:'',startDate:new Date().toISOString().slice(0,10),endDate:new Date(Date.now()+3*86400000).toISOString().slice(0,10),budget:0,itinerary:[],flights:[],documents:[],expenses:[],packing:[],coupons:[],guides:[],...data});
 let state={trips:[],activeId:null,tab:'home',day:1,folder:'documents'};
 function loadLocal(){try{const raw=JSON.parse(localStorage.getItem(KEY)||'{}');return {trips:Array.isArray(raw.trips)?raw.trips:[],activeId:raw.activeId||raw.trips?.[0]?.id||null};}catch(e){console.warn('本機資料讀取失敗',e);return {trips:[],activeId:null};}}
 function setSyncStatus(s){const el=$('syncStatus');if(el)el.textContent=s;}
-function tripToRow(t){const data={budget:Number(t.budget||0),itinerary:t.itinerary||[],flights:t.flights||[],documents:t.documents||[],expenses:t.expenses||[],packing:t.packing||[],coupons:t.coupons||[]};return {id:t.id,owner_id:t._ownerId||currentUser.id,title:t.title,destination:t.destination||'',start_date:t.startDate||null,end_date:t.endDate||null,data};}
-function rowToTrip(r){const d=r.data||{};return {id:r.id,_ownerId:r.owner_id,_isNew:false,title:r.title||'',destination:r.destination||'',startDate:r.start_date||'',endDate:r.end_date||'',budget:Number(d.budget||0),itinerary:d.itinerary||[],flights:d.flights||[],documents:d.documents||[],expenses:d.expenses||[],packing:d.packing||[],coupons:d.coupons||[]};}
+function tripToRow(t){const data={budget:Number(t.budget||0),itinerary:t.itinerary||[],flights:t.flights||[],documents:t.documents||[],expenses:t.expenses||[],packing:t.packing||[],coupons:t.coupons||[],guides:t.guides||[]};return {id:t.id,owner_id:t._ownerId||currentUser.id,title:t.title,destination:t.destination||'',start_date:t.startDate||null,end_date:t.endDate||null,data};}
+function rowToTrip(r){const d=r.data||{};return {id:r.id,_ownerId:r.owner_id,_isNew:false,title:r.title||'',destination:r.destination||'',startDate:r.start_date||'',endDate:r.end_date||'',budget:Number(d.budget||0),itinerary:d.itinerary||[],flights:d.flights||[],documents:d.documents||[],expenses:d.expenses||[],packing:d.packing||[],coupons:d.coupons||[],guides:d.guides||[]};}
 async function save(){
   if(!currentUser||!cloudReady)return;
   const t=trip();
@@ -235,7 +266,7 @@ function subscribeRealtime(){if(realtimeChannel)supabaseClient.removeChannel(rea
 const trip=()=>state.trips.find(t=>t.id===state.activeId)||null;
 function ensureArrays(t){for(const k of ['itinerary','flights','documents','expenses','packing','coupons'])if(!Array.isArray(t[k]))t[k]=[];}
 function go(tab){state.tab=tab;document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));$(tab+'Panel').classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));render();}
-function render(){renderHome();renderItinerary();renderMap();renderFlights();renderFolder();}
+function render(){renderHome();renderItinerary();renderMap();renderFlights();renderFolder();renderGuides();}
 function renderHome(){const t=trip();$('tripCount').textContent=`${state.trips.length} trips`;if(!t){$('heroTitle').textContent='規劃下一趟旅行';$('heroDestination').textContent='建立旅行，收納所有旅途細節。';$('homeSummary').innerHTML='<div class="card span-12 empty">目前還沒有旅行，點擊「新增旅行」開始規劃。</div>';}else{const today=new Date();today.setHours(0,0,0,0);const start=new Date(t.startDate+'T00:00:00');const diff=Math.round((start-today)/86400000);const spent=t.expenses.reduce((s,e)=>s+Number(e.amount||0),0);$('heroTitle').textContent=t.title;$('heroDestination').textContent=t.destination;$('homeSummary').innerHTML=`
 <div class="card span-8"><div class="eyebrow">TRAVEL DATE</div><h2 style="font-size:21px;margin:8px 0">${fmtDate(t.startDate)} — ${fmtDate(t.endDate)}</h2><div class="muted">${diff>0?`距離出發還有 ${diff} 天`:diff===0?'今天出發，旅途愉快！':'這趟旅行已開始或結束'}</div><div class="stat-row"><div class="stat"><strong>${t.itinerary.length}</strong><span>行程項目</span></div><div class="stat"><strong>${t.flights.length}</strong><span>航班</span></div><div class="stat"><strong>${t.documents.length}</strong><span>票券資料</span></div></div><div class="actions"><button class="btn small" onclick="editTrip('${t.id}')">編輯旅行</button><button class="btn small" onclick="openPublicShare()">建立公開連結</button><button class="btn small" onclick="revokePublicShare()">關閉公開連結</button><button class="btn small danger" onclick="deleteTrip('${t.id}')">刪除旅行</button></div></div>
 <div class="card span-4"><h3>預算概況</h3><div style="font-size:22px;font-weight:700">NT$ ${money(spent)}</div><div class="muted">已支出 / NT$ ${money(t.budget)}</div><div class="progress"><i style="width:${t.budget>0?Math.min(100,spent/t.budget*100):0}%"></i></div><div class="muted">剩餘 NT$ ${money(t.budget-spent)}</div></div>`;}
@@ -244,6 +275,79 @@ function renderItinerary(){const t=trip();$('itinerarySubtitle').textContent=t?`
 function renderMap(){const t=trip();$('mapSubtitle').textContent=t?`${t.title} · ${t.destination}`:'';$('mapDestination').textContent=t?.destination||'尚未設定目的地';const places=t?t.itinerary.filter(x=>x.location).sort((a,b)=>Number(a.day)-Number(b.day)):[];const options='<option value="">請選擇</option>'+places.map(x=>`<option value="${esc(x.id)}">${esc(x.title)}</option>`).join('');const from=$('routeFrom').value,to=$('routeTo').value;$('routeFrom').innerHTML=options;$('routeTo').innerHTML=options;if(places.some(x=>x.id===from))$('routeFrom').value=from;else if(places.length)$('routeFrom').value=places[0].id;if(places.some(x=>x.id===to))$('routeTo').value=to;else if(places.length>1)$('routeTo').value=places[1].id;updateRoutePreview();$('mapPlaces').innerHTML=t?places.map(x=>`<div class="item-row"><div class="item-main"><span class="badge">${sketchIcon(x.category)}DAY ${x.day} · ${esc(x.category)}</span><strong>${esc(x.title)}</strong><small>${esc(x.location)}</small></div><button class="btn small" type="button" onclick="setRouteDestination('${esc(x.id)}')">設為目的地</button><a class="btn small" target="_blank" rel="noopener" href="${mapUrl(x.location)}">導航 ↗</a></div>`).join('')||'<div class="empty">在行程中加入地點後，這裡會整理導航入口。</div>':'<div class="empty">請先建立旅行。</div>'; }
 let selectedRouteMode='transit';const routeModeNames={transit:'大眾運輸',driving:'開車',walking:'步行',bicycling:'自行車'};function selectedRouteItem(value){return trip()?.itinerary.find(x=>x.id===value);}function updateRoutePreview(){const from=selectedRouteItem($('routeFrom').value),to=selectedRouteItem($('routeTo').value);$('routeFromPreview').textContent=from?.title||'選擇起點';$('routeToPreview').textContent=to?.title||'選擇終點';$('routeModePreview').textContent=routeModeNames[selectedRouteMode];}function setRouteDestination(id){$('routeTo').value=id;updateRoutePreview();}function resolveRoutePlace(value){return selectedRouteItem(value)?.location||'';}function routeUrl(){const from=$('routeFrom').value,to=$('routeTo').value;if(!from||!to){alert('請選擇出發地與目的地');return null;}if(from===to){alert('出發地與目的地不能相同');return null;}const params=new URLSearchParams({api:'1',origin:resolveRoutePlace(from),destination:resolveRoutePlace(to),travelmode:selectedRouteMode});return 'https://www.google.com/maps/dir/?'+params.toString();}function addRouteToItinerary(){const t=trip();if(!t)return alert('請先建立或選擇一趟旅行');const from=$('routeFrom').value,to=$('routeTo').value;if(!routeUrl())return;const fromItem=selectedRouteItem(from),toItem=selectedRouteItem(to);const day=Number(state.day)||1;t.itinerary.push({id:uid(),title:`${fromItem.title} → ${toItem.title}`,category:'交通',day,time:'',location:toItem.location,note:`交通方式：${routeModeNames[selectedRouteMode]}；出發地：${fromItem.location}`});save();render();alert('已加入當日行程。');}$('routeFrom').addEventListener('change',updateRoutePreview);$('routeTo').addEventListener('change',updateRoutePreview);$('routeSwap').onclick=()=>{const a=$('routeFrom').value;$('routeFrom').value=$('routeTo').value;$('routeTo').value=a;updateRoutePreview();};$('routeModes').onclick=e=>{const b=e.target.closest('button[data-mode]');if(!b)return;selectedRouteMode=b.dataset.mode;document.querySelectorAll('.route-mode').forEach(x=>x.classList.toggle('active',x===b));updateRoutePreview();};$('routeOpenMaps').onclick=()=>{const url=routeUrl();if(url)window.open(url,'_blank','noopener,noreferrer');};$('routeAddToItinerary').onclick=addRouteToItinerary;$('routeReset').onclick=()=>{$('routeFrom').value='';$('routeTo').value='';selectedRouteMode='transit';document.querySelectorAll('.route-mode').forEach(x=>x.classList.toggle('active',x.dataset.mode==='transit'));updateRoutePreview();};
 function renderFlights(){const t=trip();$('flightSubtitle').textContent=t?.title||'先建立旅行';$('flightList').innerHTML=t?.flights.length?t.flights.map(f=>`<div class="card"><div class="section-head" style="margin:0 0 8px"><h2>${esc(f.flightNumber)}</h2><div class="item-actions"><button onclick="editFlight('${f.id}')">編輯</button><button onclick="removeItem('flights','${f.id}')">刪除</button></div></div><div class="muted">${esc(f.airline)} ${f.from||f.to?'·':''} ${esc(f.from)} ${f.from||f.to?'→':''} ${esc(f.to)}</div><div class="muted">${esc(f.date)} ${esc(f.note)}</div><div class="actions"><a class="btn small" target="_blank" rel="noopener" href="https://www.flightaware.com/live/flight/${encodeURIComponent(f.flightNumber)}">查詢航班 ↗</a></div></div>`).join(''):'<div class="empty">尚未新增航班。</div>';}
+
+const guideCategoryNames={'吃':'吃 FOOD','玩':'玩 PLAY','逛':'逛 SHOP',food:'吃 FOOD',play:'玩 PLAY',shop:'逛 SHOP'};
+const guideCategoryClass={food:'cat-food',play:'cat-play',shop:'cat-shop','吃':'cat-food','玩':'cat-play','逛':'cat-shop'};
+let guideCategoryFilter='all';
+function guideFields(g={}){
+  return [
+    {name:'title',label:'地點／店家名稱',value:g.title||'',required:true,full:true,placeholder:'例如：淺草寺、某某拉麵'},
+    {name:'category',label:'分類',type:'select',value:g.category||'玩',options:['吃','玩','逛'],full:true},
+    {name:'address',label:'地址／地點',value:g.address||'',full:true},
+    {name:'hours',label:'營業時間／開放時間',value:g.hours||''},
+    {name:'price',label:'價格／預算',value:g.price||''},
+    {name:'duration',label:'建議停留時間',value:g.duration||''},
+    {name:'website',label:'官方網站／訂位連結',value:g.website||'',full:true},
+    {name:'highlights',label:'必吃／必玩／必逛重點',type:'textarea',value:g.highlights||'',full:true,placeholder:'列出推薦品項、設施、店家或樓層'},
+    {name:'howTo',label:'怎麼玩／攻略方式',type:'textarea',value:g.howTo||'',full:true,placeholder:'推薦順序、排隊技巧、點餐方式、購物路線…'},
+    {name:'transport',label:'交通方式',type:'textarea',value:g.transport||'',full:true},
+    {name:'notice',label:'注意事項',type:'textarea',value:g.notice||'',full:true},
+    {name:'note',label:'個人備註',type:'textarea',value:g.note||'',full:true}
+  ];
+}
+function guidePrompt(g={}){
+  return `請幫我整理以下旅遊地點的攻略，請使用繁體中文，並把不確定或可能變動的資訊標示「需查證」，不要編造營業時間、價格或官方規定。\\n地點：${g.title||'（請填地點）'}\\n分類：${guideCategoryNames[g.category]||'請選吃／玩／逛'}\\n地址或城市：${g.address||trip()?.destination||''}\\n請整理：營業時間、價格、建議停留時間、必吃／必玩／必逛重點、實際遊玩方式與順序、交通方式、注意事項、官方網站。`;
+}
+async function copyGuidePrompt(id){
+  const g=trip()?.guides?.find(x=>x.id===id)||{};
+  const p=guidePrompt(g);
+  const ok=await copyTextCompat(p);
+  if(ok)alert('AI 攻略提示詞已複製。貼到 ChatGPT 後，把整理結果填回這筆攻略即可。');
+  else window.prompt('複製以下提示詞，貼到 ChatGPT 使用：',p);
+}
+function renderGuides(){
+  const t=trip();$('guideSubtitle').textContent=t?`${t.title} · ${t.destination}`:'先建立旅行';
+  if(!t){$('guideList').innerHTML='<div class="empty">請先建立或選擇一趟旅行。</div>';$('guideCount').textContent='0 個地點';return;}
+  t.guides=Array.isArray(t.guides)?t.guides:[];
+  const q=($('guideSearch')?.value||'').trim().toLowerCase();
+  const list=t.guides.filter(g=>(guideCategoryFilter==='all'||g.category===guideCategoryFilter)&&(!q||[g.title,g.address,g.highlights,g.howTo,g.note].join(' ').toLowerCase().includes(q)));
+  $('guideCount').textContent=`${list.length} 個地點`;
+  $('guideList').innerHTML=list.length?list.map(g=>`<article class="guide-card"><div><span class="guide-category-badge ${guideCategoryClass[g.category]||''}">${guideCategoryNames[g.category]||'旅遊攻略'}</span><h3>${esc(g.title)}</h3><div class="guide-meta">${g.address?esc(g.address)+'<br>':''}${g.hours?'時間：'+esc(g.hours)+'　':''}${g.price?'價格：'+esc(g.price)+'　':''}${g.duration?'建議停留：'+esc(g.duration):''}</div>${g.highlights?`<div class="guide-detail"><strong>重點推薦</strong><br>${esc(g.highlights)}</div>`:''}${g.howTo?`<div class="guide-detail"><strong>怎麼玩</strong><br>${esc(g.howTo)}</div>`:''}${g.transport?`<div class="guide-detail"><strong>交通</strong><br>${esc(g.transport)}</div>`:''}${g.notice?`<div class="guide-detail"><strong>注意事項</strong><br>${esc(g.notice)}</div>`:''}${g.note?`<div class="guide-detail"><strong>個人備註</strong><br>${esc(g.note)}</div>`:''}<div class="actions">${g.website?`<a class="btn small" target="_blank" rel="noopener" href="${safeUrl(g.website)}">官方資訊 ↗</a>`:''}${g.address?`<a class="btn small" target="_blank" rel="noopener" href="${mapUrl(g.address)}">地圖 ↗</a>`:''}<button class="btn small" onclick="copyGuidePrompt('${g.id}')">AI 協助填寫</button><button class="btn small" onclick="editGuide('${g.id}')">編輯</button><button class="btn small" onclick="copyGuideToTrip('${g.id}')">複製到其他旅行</button><button class="btn small danger" onclick="deleteGuide('${g.id}')">刪除</button></div></div></article>`).join(''):'<div class="empty">目前沒有符合條件的攻略，新增第一個吃、玩或逛的地點吧。</div>';
+}
+function addGuide(){
+  const t=trip();if(!t)return alert('請先建立或選擇一趟旅行');
+  openForm('新增旅遊攻略',guideFields(),async v=>{
+    t.guides=t.guides||[];
+    t.guides.push({id:uid(),...v,createdAt:new Date().toISOString()});
+    await save();renderGuides();
+  });
+}
+function editGuide(id){
+  const t=trip(),g=t?.guides?.find(x=>x.id===id);if(!g)return;
+  openForm('編輯旅遊攻略',guideFields(g),async v=>{
+    Object.assign(g,v,{updatedAt:new Date().toISOString()});
+    await save();renderGuides();
+  });
+}
+async function deleteGuide(id){
+  const t=trip();if(!t||!confirm('確定刪除這筆旅遊攻略？'))return;
+  t.guides=t.guides.filter(x=>x.id!==id);await save();renderGuides();
+}
+async function copyGuideToTrip(id){
+  const sourceTrip=trip(),g=sourceTrip?.guides?.find(x=>x.id===id);
+  if(!g)return;
+  const others=state.trips.filter(x=>x.id!==sourceTrip.id);
+  if(!others.length)return alert('目前沒有其他旅行可以複製。');
+  const menu=others.map((x,i)=>`${i+1}. ${x.title}（${x.destination||'未設定目的地'}）`).join('\\n');
+  const answer=prompt('要複製到哪一趟旅行？請輸入編號：\\n'+menu);
+  if(answer===null)return;
+  const target=others[Number(answer)-1];
+  if(!target)return alert('編號無效，請重新操作。');
+  target.guides=target.guides||[];
+  target.guides.push({...JSON.parse(JSON.stringify(g)),id:uid(),copiedFrom:sourceTrip.id,createdAt:new Date().toISOString()});
+  const previousId=state.activeId;state.activeId=target.id;await save();state.activeId=previousId;render();alert(`已複製到「${target.title}」。`);
+}
+
 function renderFolder(){const t=trip();$('folderSubtitle').textContent=t?.title||'先建立旅行';for(const key of ['documents','coupons','budget','packing']){$(key+'Section').classList.toggle('hide',state.folder!==key);document.querySelectorAll('#folderSegments button').forEach(b=>b.classList.toggle('active',b.dataset.section===state.folder));}if(!t){$('documentList').innerHTML='<div class="empty">請先建立旅行。</div>';if($('couponList'))$('couponList').innerHTML='<div class="empty">請先建立旅行。</div>';return;}
 renderCoupons(t);$('documentList').innerHTML=t.documents.length?t.documents.map(d=>`<div class="card"><div class="section-head" style="margin:0 0 8px"><div><span class="badge">${esc(d.kind)}</span><h2 style="margin:7px 0 0">${esc(d.title)}</h2></div><div class="item-actions"><button onclick="editDocument('${d.id}')">編輯</button><button onclick="removeItem('documents','${d.id}')">刪除</button></div></div>${d.code?`<p>代碼：<strong>${esc(d.code)}</strong></p>`:''}${d.note?`<p class="muted">${esc(d.note)}</p>`:''}${d.url?`<a class="link" target="_blank" rel="noopener" href="${safeUrl(d.url)}">開啟相關連結 ↗</a>`:''}${attachmentMarkup(d)}</div>`).join(''):'<div class="empty">把門票、住宿、交通及訂單資訊集中放在這裡。</div>';
 const spent=t.expenses.reduce((s,e)=>s+Number(e.amount||0),0);$('budgetSummary').innerHTML=`<div class="card"><div class="eyebrow">TOTAL BUDGET</div><h2>NT$ ${money(t.budget)}</h2><div>已支出 NT$ ${money(spent)}</div><div class="progress"><i style="width:${t.budget>0?Math.min(100,spent/t.budget*100):0}%"></i></div><strong>剩餘 NT$ ${money(t.budget-spent)}</strong></div>`;$('expenseList').innerHTML=t.expenses.length?t.expenses.map(e=>`<div class="item-row"><div class="item-main"><span class="badge">${sketchIcon(e.category)}${esc(e.category)}</span><strong>${esc(e.title)}</strong>${e.note?`<small>${esc(e.note)}</small>`:''}</div><strong>NT$ ${money(e.amount)}</strong><div class="item-actions"><button onclick="editExpense('${e.id}')">編輯</button><button onclick="removeItem('expenses','${e.id}')">刪除</button></div></div>`).join(''):'<div class="empty">尚未新增消費紀錄。</div>';
@@ -533,7 +637,8 @@ async function openPublicShare(){
     const bytes=crypto.getRandomValues(new Uint8Array(32));
     const token=Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
     const hash=await sha256(token);
-    const {error}=await supabaseClient.rpc('create_public_trip_share',{p_trip_id:t.id,p_token_hash:hash});
+    const includeGuide=confirm('是否要讓這個公開連結也包含「旅遊使用說明書」？\n\n按「確定」：公開行程＋吃玩逛攻略\n按「取消」：只公開每日行程');
+    const {error}=await supabaseClient.rpc('create_public_trip_share',{p_trip_id:t.id,p_token_hash:hash,p_include_guide:includeGuide});
     if(error)throw error;
     const url=location.origin+location.pathname+'?share='+token;
     const copied=await copyTextCompat(url);
@@ -564,6 +669,11 @@ async function loadPublicShare(token){
     $('publicTripDates').textContent=[data.destination,data.start_date,data.end_date].filter(Boolean).join(' · ');
     const items=Array.isArray(data.itinerary)?data.itinerary:[];
     $('publicItinerary').innerHTML=items.length?items.map(x=>`<div class="item-row" style="margin:10px 0"><div class="item-main"><span class="badge">DAY ${esc(x.day||'')} · ${esc(x.category||'行程')}</span><div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><strong>${esc(x.title||'未命名行程')}</strong>${x.time?`<span style="font-size:16px;color:var(--gold);font-weight:700">${esc(x.time)}</span>`:''}</div>${x.location?`<small>${esc(x.location)}</small>`:''}</div>${x.location?`<a class="btn small" target="_blank" rel="noopener" href="${mapUrl(x.location)}">地圖 ↗</a>`:''}</div>`).join(''):'<div class="empty">目前沒有公開的行程項目。</div>';
+    const guides=Array.isArray(data.guides)?data.guides:[];
+    if(guides.length){
+      $('publicGuideSection').classList.remove('hide');
+      $('publicGuide').innerHTML=guides.map(g=>`<article class="guide-card" style="margin:10px 0"><div><span class="guide-category-badge ${guideCategoryClass[g.category]||''}">${guideCategoryNames[g.category]||'旅遊攻略'}</span><h3>${esc(g.title||'未命名地點')}</h3>${g.address?`<div class="guide-meta">${esc(g.address)}</div>`:''}${g.hours?`<div class="guide-meta">時間：${esc(g.hours)}</div>`:''}${g.price?`<div class="guide-meta">價格：${esc(g.price)}</div>`:''}${g.duration?`<div class="guide-meta">建議停留：${esc(g.duration)}</div>`:''}${g.highlights?`<div class="guide-detail"><strong>重點推薦</strong><br>${esc(g.highlights)}</div>`:''}${g.howTo?`<div class="guide-detail"><strong>怎麼玩</strong><br>${esc(g.howTo)}</div>`:''}${g.transport?`<div class="guide-detail"><strong>交通</strong><br>${esc(g.transport)}</div>`:''}${g.notice?`<div class="guide-detail"><strong>注意事項</strong><br>${esc(g.notice)}</div>`:''}${g.website?`<div class="actions"><a class="btn small" target="_blank" rel="noopener" href="${safeUrl(g.website)}">官方資訊 ↗</a></div>`:''}</div></article>`).join('');
+    }
   }catch(e){console.error(e);$('publicTripTitle').textContent='無法開啟分享行程';$('publicTripDates').textContent=e.message;$('publicItinerary').innerHTML='';}
 }
 
@@ -575,7 +685,7 @@ const publicShareToken=new URLSearchParams(location.search).get('share');
 if(publicShareToken)loadPublicShare(publicShareToken);
 supabaseClient.auth.getSession().then(async({data,error})=>{if(error){$('authMessage').textContent=error.message;return;}if(data.session){authSession=data.session;currentUser=data.session.user;try{await afterLogin();}catch(e){console.error(e);$('authGate').classList.remove('hide');$('authMessage').textContent='雲端載入失敗：'+e.message;}}});
 supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session){authSession=session;currentUser=session.user;} });
-$('newTripBtn').onclick=addTrip;$('addCouponBtn').onclick=addCoupon;$('addItineraryBtn').onclick=()=>addItinerary();$('addFlightBtn').onclick=addFlight;$('addDocumentBtn').onclick=addDocument;$('editBudgetBtn').onclick=editBudget;$('addExpenseBtn').onclick=addExpense;$('addPackingBtn').onclick=addPacking;
+$('newTripBtn').onclick=addTrip;$('addGuideBtn').onclick=addGuide;$('guideSearch').oninput=renderGuides;$('guideSegments').onclick=e=>{const b=e.target.closest('button[data-guide-category]');if(!b)return;guideCategoryFilter=b.dataset.guideCategory;document.querySelectorAll('#guideSegments button').forEach(x=>x.classList.toggle('active',x===b));renderGuides();};$('addCouponBtn').onclick=addCoupon;$('addItineraryBtn').onclick=()=>addItinerary();$('addFlightBtn').onclick=addFlight;$('addDocumentBtn').onclick=addDocument;$('editBudgetBtn').onclick=editBudget;$('addExpenseBtn').onclick=addExpense;$('addPackingBtn').onclick=addPacking;
 $('openDestinationMap').onclick=()=>{const t=trip();if(t)window.open(mapUrl(t.destination),'_blank','noopener');};$('searchTransit').onclick=()=>{const t=trip();if(t)window.open(mapUrl(t.destination+' 大眾運輸'),'_blank','noopener');};
 $('folderSegments').onclick=e=>{const b=e.target.closest('button[data-section]');if(!b)return;state.folder=b.dataset.section;renderFolder();};
 document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.tab));
