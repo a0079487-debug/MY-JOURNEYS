@@ -108,7 +108,7 @@
 .itinerary-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .itinerary-info-choice{display:flex;align-items:center;gap:12px;text-align:left;padding:16px 14px;border:1px solid var(--line);border-radius:13px;background:#fffefa;color:var(--forest);cursor:pointer;min-width:0;transition:border-color .15s,background .15s}
 .itinerary-info-choice:hover{border:1.5px solid var(--gold);background:#f5f0e6}
-.itinerary-info-icon{font-size:22px;flex:0 0 32px;text-align:center}
+.itinerary-info-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px}.itinerary-info-icon .category-mark{width:30px;height:30px;display:grid;place-items:center;background:transparent}.itinerary-info-icon .sketch-icon{width:25px;height:25px;stroke:var(--forest);stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .itinerary-info-copy{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
 .itinerary-info-copy strong{font-size:14px;font-weight:700}
 .itinerary-info-copy small{font-size:11px;color:var(--muted)}
@@ -624,8 +624,9 @@ function migrateLegacyGuideToItinerary(item){
 
 
 const itineraryInfoFields={"transport": [["route", "搭乘方式", "例如：JR 山手線、地鐵銀座線", "text"], ["fromTo", "出發／抵達站點", "例如：東京站 → 舞濱站", "text"], ["duration", "交通時間", "例如：約 25 分鐘", "text"], ["fare", "車資", "例如：220 日圓", "text"], ["transportNote", "交通備註", "轉乘方式、月台、注意事項", "textarea"]], "play": [["hours", "開放時間", "例如：09:00–21:00", "text"], ["price", "門票／費用", "例如：成人票 7,900 日圓", "text"], ["duration", "建議遊玩時間", "例如：半天", "text"], ["highlights", "必玩項目", "想玩的設施、表演、推薦路線", "textarea"], ["reservation", "預約／排隊提醒", "預約方式、抽整理券、排隊提醒", "textarea"]], "food": [["hours", "營業時間", "例如：11:00–22:00", "text"], ["price", "人均預算", "例如：1,500–2,000 日圓", "text"], ["cuisine", "料理類型", "例如：壽司、拉麵、甜點", "text"], ["signature", "推薦餐點", "想吃的品項、招牌餐點", "textarea"], ["reservation", "訂位／候位資訊", "訂位方式、候位提醒", "textarea"]], "shop": [["hours", "營業時間", "例如：10:00–21:00", "text"], ["price", "預算／價格備註", "例如：平價服飾", "text"], ["mustBuy", "想買的東西", "想買的商品、伴手禮", "textarea"], ["taxFree", "免稅資訊", "免稅門檻、護照、退稅櫃檯", "textarea"], ["shopNote", "購物提醒", "樓層、限定品、退換貨資訊", "textarea"]], "other": [["description", "事項內容", "簡單記錄這個行程要做什麼", "textarea"], ["hours", "相關時間", "例如：集合時間 08:30", "text"], ["price", "費用", "例如：每人 500 元", "text"], ["otherNote", "補充備註", "其他需要記住的資訊", "textarea"]]};
-const itineraryInfoLabels={"transport": "交通", "play": "遊玩", "food": "美食", "shop": "購物", "other": "其他"};
-const itineraryInfoIcons={"transport": "🚆", "play": "🎡", "food": "🍜", "shop": "🛍️", "other": "✦"};
+const itineraryInfoLabels={"transport": "交通", "play": "遊玩", "food": "美食", "shop": "購物"};
+const itineraryInfoIconKinds={"transport":"交通","play":"景點","food":"餐廳","shop":"購物"};
+function itineraryInfoIcon(kind){return sketchIcon(itineraryInfoIconKinds[kind]||'景點');}
 function getItineraryEntries(x,kind){
   x.details=x.details||{};
   x.details.sections=x.details.sections||{};
@@ -646,7 +647,7 @@ function renderItineraryCategoryHome(id){
     const entries=getItineraryEntries(x,kind);
     const count=entries.length;
     return `<button type="button" class="itinerary-info-choice" onclick="openItineraryCategory('${x.id}','${kind}')">
-      <span class="itinerary-info-icon">${itineraryInfoIcons[kind]}</span>
+      <span class="itinerary-info-icon">${itineraryInfoIcon(kind)}</span>
       <span class="itinerary-info-copy"><strong>${itineraryInfoLabels[kind]}</strong><small>${count?`已儲存 ${count} 筆資訊`:'尚未新增資訊'}</small></span>
       <span class="itinerary-info-action">查看　›</span>
     </button>`;
@@ -673,10 +674,10 @@ function openItineraryCategory(id,kind){
   const list=entries.map((entry,index)=>{
     const defs=itineraryInfoFields[kind];
     const primary=entry.name||entry.storeName||entry.route||entry.fromTo||entry.description||entry.cuisine||entry.title||`${title} ${index+1}`;
-    const secondary=defs.map(([key])=>entry[key]).find(v=>String(v||'').trim()&&v!==primary)||'尚未填寫其他資訊';
+    const secondary=defs.map(([key])=>entry[key]).find(v=>String(v||'').trim()&&v!==primary)||'';
     const details=defs.filter(([key])=>String(entry[key]||'').trim()).map(([key,label])=>`<div class="itinerary-entry-field"><span>${label}</span><p>${esc(entry[key])}</p></div>`).join('');
     return `<article class="itinerary-entry-card">
-      <div class="itinerary-entry-head"><div class="itinerary-entry-number">${String(index+1).padStart(2,'0')}</div><div class="itinerary-entry-heading"><strong>${esc(primary)}</strong><small>${esc(secondary)}</small></div><div class="itinerary-entry-actions"><button type="button" onclick="editItineraryEntry('${x.id}','${kind}','${entry.id}')">編輯</button><button type="button" onclick="deleteItineraryEntry('${x.id}','${kind}','${entry.id}')">刪除</button></div></div>
+      <div class="itinerary-entry-head"><div class="itinerary-entry-number">${String(index+1).padStart(2,'0')}</div><div class="itinerary-entry-heading"><strong>${esc(primary)}</strong>${secondary?`<small>${esc(secondary)}</small>`:''}</div><div class="itinerary-entry-actions"><button type="button" onclick="editItineraryEntry('${x.id}','${kind}','${entry.id}')">編輯</button><button type="button" onclick="deleteItineraryEntry('${x.id}','${kind}','${entry.id}')">刪除</button></div></div>
       ${details?`<div class="itinerary-entry-fields">${details}</div>`:''}
     </article>`;
   }).join('');
