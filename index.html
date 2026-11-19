@@ -140,15 +140,15 @@
 
 /* 莫蘭迪四色系統：墨綠、霧金、灰藍、陶紅 */
 :root{
-  --forest:#536B60;
+  --forest:#40564B;
   --cream:#F3F1EA;
   --paper:#FBFAF6;
   --gold:#B39A6A;
   --muted:#85877F;
   --line:#DEDCD2;
   --red:#A87570;
-  --itinerary-color:#536B60;
-  --transport-color:#536B60;
+  --itinerary-color:#40564B;
+  --transport-color:#40564B;
   --food-color:#B39A6A;
   --ticket-color:#71899B;
   --shopping-color:#A87570;
@@ -162,9 +162,9 @@
 .category-badge.shopping{background:var(--red)}
 .flight-direction{background:var(--ticket-color)}
 .itinerary-category.food{background:#F0E9D9;color:#8A744A}
-.itinerary-category.play{background:#E5EBE5;color:#536B60}
+.itinerary-category.play{background:#E5EBE5;color:#40564B}
 .itinerary-category.shop{background:#F1E5E3;color:#986A65}
-.itinerary-category.transport{background:#E5EBE5;color:#536B60}
+.itinerary-category.transport{background:#E5EBE5;color:#40564B}
 .itinerary-detail-block{padding:14px 15px;margin:10px 0;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:13px;background:#F8F7F1}
 .itinerary-detail-block h4{color:var(--forest);font-size:13px}
 .itinerary-detail-block p{color:#686D67}
@@ -201,7 +201,7 @@
   box-shadow:0 0 0 1.5px #71816E;
 }
 .timeline-axis.dot-itinerary:after{background:#A87570;box-shadow:0 0 0 1.5px #A87570}
-.timeline-axis.dot-transport:after{background:#536B60;box-shadow:0 0 0 1.5px #536B60}
+.timeline-axis.dot-transport:after{background:#40564B;box-shadow:0 0 0 1.5px #40564B}
 .timeline-axis.dot-food:after{background:#B39A6A;box-shadow:0 0 0 1.5px #B39A6A}
 .timeline-axis.dot-ticket:after{background:#71899B;box-shadow:0 0 0 1.5px #71899B}
 .timeline-axis.dot-shopping:after{background:#A87570;box-shadow:0 0 0 1.5px #A87570}
@@ -229,11 +229,11 @@
 .timeline-axis{font-size:16px!important;font-weight:700!important;line-height:1.4!important;color:#454A45!important;padding-top:15px!important;letter-spacing:.02em}
 .timeline-axis.unscheduled{font-size:12px!important;font-weight:600!important;color:#85877F!important}
 .timeline-axis:after{background:#B39A6A!important;border:3px solid var(--cream)!important;box-shadow:0 0 0 1px #B39A6A!important;width:10px!important;height:10px!important}
-.timeline-axis.dot-transport:after{background:#536B60!important;box-shadow:0 0 0 1px #536B60!important}
+.timeline-axis.dot-transport:after{background:#40564B!important;box-shadow:0 0 0 1px #40564B!important}
 .timeline-axis.dot-food:after{background:#B39A6A!important;box-shadow:0 0 0 1px #B39A6A!important}
 .timeline-axis.dot-ticket:after{background:#71899B!important;box-shadow:0 0 0 1px #71899B!important}
 .timeline-axis.dot-shopping:after{background:#A87570!important;box-shadow:0 0 0 1px #A87570!important}
-.timeline-axis.dot-itinerary:after{background:#536B60!important;box-shadow:0 0 0 1px #536B60!important}
+.timeline-axis.dot-itinerary:after{background:#40564B!important;box-shadow:0 0 0 1px #40564B!important}
 .timeline-axis.dot-neutral:after{background:#B39A6A!important;box-shadow:0 0 0 1px #B39A6A!important}
 .timeline-axis.dot-itinerary,.timeline-axis.dot-transport,.timeline-axis.dot-food,.timeline-axis.dot-ticket,.timeline-axis.dot-shopping,.timeline-axis.dot-neutral{color:#454A45!important}
 @media(max-width:720px){.timeline-axis{font-size:15px!important}}
@@ -333,7 +333,7 @@
 
   <section id="mapPanel" class="panel">
     <div class="hero"><div><div class="eyebrow">PLACES & TRANSIT</div><h1>地圖與交通</h1><div class="muted" id="mapSubtitle"></div></div></div>
-    <div class="card map-destination-card"><div><h2>旅行目的地</h2><div id="mapDestination" class="muted"></div></div><div class="actions"><button class="btn primary" id="openDestinationMap">開啟 Google Maps</button><button class="btn" id="searchTransit">搜尋大眾運輸</button></div></div>
+    <div class="card map-destination-card"><div><h2>旅行目的地</h2><div id="mapDestination" class="muted"></div></div><div class="actions"><button class="btn primary" id="openDestinationMap">開啟 Google Maps</button></div></div>
     <section class="card route-planner" aria-label="點對點交通規劃">
       <div class="route-planner-head"><div><div class="eyebrow">ROUTE</div><h2>點對點交通</h2></div></div>
       <div class="route-fields">
@@ -483,7 +483,18 @@ async function loadCloud(){setSyncStatus('載入雲端…');const {data,error}=a
 function subscribeRealtime(){if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);realtimeChannel=supabaseClient.channel('my-journeys-live').on('postgres_changes',{event:'*',schema:'public',table:'trips'},payload=>{const id=payload.new?.id||payload.old?.id;if(!id)return;if(payload.eventType==='DELETE'){state.trips=state.trips.filter(t=>t.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;}else{const incoming=rowToTrip(payload.new);const i=state.trips.findIndex(t=>t.id===id);if(i<0)state.trips.push(incoming);else state.trips[i]=incoming;if(!state.activeId)state.activeId=id;}render();setSyncStatus('已即時更新');}).subscribe();}
 const trip=()=>state.trips.find(t=>t.id===state.activeId)||null;
 function ensureArrays(t){for(const k of ['itinerary','flights','documents','expenses','packing','coupons','guides'])if(!Array.isArray(t[k]))t[k]=[];}
-function go(tab){state.tab=tab;document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));$(tab+'Panel').classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));render();}
+function getTodayTripDay(t){
+  if(!t?.startDate||!t?.endDate)return 1;
+  const [sy,sm,sd]=t.startDate.split('-').map(Number);
+  const [ey,em,ed]=t.endDate.split('-').map(Number);
+  const today=new Date();
+  const todayUTC=Date.UTC(today.getFullYear(),today.getMonth(),today.getDate());
+  const startUTC=Date.UTC(sy,sm-1,sd);
+  const endUTC=Date.UTC(ey,em-1,ed);
+  const totalDays=Math.max(1,Math.min(60,Math.floor((endUTC-startUTC)/86400000)+1));
+  return Math.max(1,Math.min(totalDays,Math.floor((todayUTC-startUTC)/86400000)+1));
+}
+function go(tab){if(tab==='itinerary')state.day=getTodayTripDay(trip());state.tab=tab;document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));$(tab+'Panel').classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));render();}
 function render(){renderHome();renderItinerary();renderMap();renderFolder();}
 function renderHome(){
   const t=trip();
@@ -802,15 +813,28 @@ function editCoupon(id){
 
 function mapUrl(q){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q)}
 function safeUrl(s){try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch{return '#'}}
-function selectTrip(id){state.activeId=id;state.day=1;save();render();}
+function selectTrip(id){state.activeId=id;state.day=getTodayTripDay(trip());save();render();}
 function setDay(n){state.day=n;renderItinerary();}
 async function removeItem(key,id){const t=trip();if(!t)return;if(!confirm('確定要刪除這筆資料嗎？'))return;const target=t[key].find(x=>x.id===id);if(key==='documents'&&target?.attachments?.length){const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).remove(target.attachments.map(a=>a.path));if(error)throw error;}if(key==='coupons'&&target?.imagePath){const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).remove([target.imagePath]);if(error)throw error;}t[key]=t[key].filter(x=>x.id!==id);await save();render();}
 function togglePacking(id,value){const x=trip().packing.find(x=>x.id===id);if(x){x.checked=value;save();renderFolder();}}
 function editTrip(id){const t=state.trips.find(x=>x.id===id);openForm('編輯旅行',[{name:'title',label:'旅行名稱',value:t.title,required:true},{name:'destination',label:'目的地',value:t.destination,required:true},{name:'startDate',label:'出發日期',type:'date',value:t.startDate,required:true},{name:'endDate',label:'回程日期',type:'date',value:t.endDate,required:true},{name:'budget',label:'總預算（NT$）',type:'number',value:t.budget}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');Object.assign(t,{...v,budget:Number(v.budget||0)});save();render();});}
 async function deleteTrip(id){const t=state.trips.find(x=>x.id===id);if(!t||!confirm(`刪除「${t.title}」及其所有資料？`))return;const {error}=await supabaseClient.from('trips').delete().eq('id',id);if(error){alert('刪除失敗：'+error.message);return;}state.trips=state.trips.filter(x=>x.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;render();}
-function openForm(title,fields,onSave){$('modalTitle').textContent=title;$('modalFields').innerHTML=fields.map(f=>`<div class="field ${f.full?'full':''}"><label>${esc(f.label)}</label>${f.type==='select'?`<select name="${f.name}">${f.options.map(o=>`<option ${o===f.value?'selected':''}>${esc(o)}</option>`).join('')}</select>`:f.type==='textarea'?`<textarea name="${f.name}" placeholder="${esc(f.placeholder||'')}">${esc(f.value||'')}</textarea>`:f.type==='file'?`<input name="${f.name}" type="file" accept="${esc(f.accept||'*/*')}" ${f.multiple?'multiple':''}>`:`<input name="${f.name}" type="${f.type||'text'}" value="${esc(f.value??'')}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''} ${f.min!==undefined?`min="${f.min}"`:''}>`}</div>`).join('');$('modalBackdrop').classList.add('open');$('modalForm').onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),data=Object.fromEntries(fd.entries());data.attachmentsFile=fd.getAll('attachments').filter(x=>x instanceof File&&x.size>0);data.couponImageFile=fd.get('couponImage');try{await onSave(data);closeModal();}catch(err){console.error(err);alert('操作失敗：'+err.message);}};}
+function openForm(title,fields,onSave){$('modalTitle').textContent=title;$('modalFields').innerHTML=fields.map(f=>`<div class="field ${f.full?'full':''}"><label>${esc(f.label)}</label>${f.type==='select'?`<select name="${f.name}">${f.options.map(o=>`<option ${o===f.value?'selected':''}>${esc(o)}</option>`).join('')}</select>`:f.type==='textarea'?`<textarea name="${f.name}" placeholder="${esc(f.placeholder||'')}">${esc(f.value||'')}</textarea>`:f.type==='file'?`<input name="${f.name}" type="file" accept="${esc(f.accept||'*/*')}" ${f.multiple?'multiple':''}>`:`<input name="${f.name}" type="${f.type||'text'}" value="${esc(f.value??'')}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''} ${f.min!==undefined?`min="${f.min}"`:''}>`}</div>`).join('');
+const startDateInput=$('modalFields').querySelector('[name="startDate"]');
+const endDateInput=$('modalFields').querySelector('[name="endDate"]');
+if(startDateInput&&endDateInput){
+  const syncDateLimits=()=>{
+    endDateInput.min=startDateInput.value||'';
+    if(startDateInput.value&&endDateInput.value&&endDateInput.value<startDateInput.value){
+      endDateInput.value=startDateInput.value;
+    }
+  };
+  syncDateLimits();
+  startDateInput.addEventListener('change',syncDateLimits);
+}
+$('modalBackdrop').classList.add('open');$('modalForm').onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),data=Object.fromEntries(fd.entries());if(data.startDate&&data.endDate&&data.endDate<data.startDate){alert('回程日期不可早於出發日期');return;}data.attachmentsFile=fd.getAll('attachments').filter(x=>x instanceof File&&x.size>0);data.couponImageFile=fd.get('couponImage');try{await onSave(data);closeModal();}catch(err){console.error(err);alert('操作失敗：'+err.message);}};}
 function closeModal(){$('modalBackdrop').classList.remove('open');}
-function addTrip(){openForm('新增旅行',[{name:'title',label:'旅行名稱',placeholder:'例如：東京冬日旅行',required:true},{name:'destination',label:'目的地',placeholder:'Tokyo, Japan',required:true},{name:'startDate',label:'出發日期',type:'date',value:new Date().toISOString().slice(0,10),required:true},{name:'endDate',label:'回程日期',type:'date',value:new Date(Date.now()+3*86400000).toISOString().slice(0,10),required:true},{name:'budget',label:'總預算（NT$，選填）',type:'number',value:0}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');const t=blankTrip({...v,budget:Number(v.budget||0),_ownerId:currentUser.id,_isNew:true,id:crypto.randomUUID()});state.trips.push(t);state.activeId=t.id;state.day=1;save();render();});}
+function addTrip(){openForm('新增旅行',[{name:'title',label:'旅行名稱',placeholder:'例如：東京冬日旅行',required:true},{name:'destination',label:'目的地',placeholder:'Tokyo, Japan',required:true},{name:'startDate',label:'出發日期',type:'date',value:new Date().toISOString().slice(0,10),required:true},{name:'endDate',label:'回程日期',type:'date',value:new Date(Date.now()+3*86400000).toISOString().slice(0,10),required:true},{name:'budget',label:'總預算（NT$，選填）',type:'number',value:0}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');const t=blankTrip({...v,budget:Number(v.budget||0),_ownerId:currentUser.id,_isNew:true,id:crypto.randomUUID()});state.trips.push(t);state.activeId=t.id;state.day=getTodayTripDay(t);save();render();});}
 
 function normalizeGuideCategory(value){
   const v=String(value||'').trim().toLowerCase();
@@ -1156,7 +1180,7 @@ if(publicShareToken)loadPublicShare(publicShareToken);
 supabaseClient.auth.getSession().then(async({data,error})=>{if(error){$('authMessage').textContent=error.message;return;}if(data.session){authSession=data.session;currentUser=data.session.user;try{await afterLogin();}catch(e){console.error(e);$('authGate').classList.remove('hide');$('authMessage').textContent='雲端載入失敗：'+e.message;}}});
 supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session){authSession=session;currentUser=session.user;} });
 $('newTripBtn').onclick=addTrip;$('addCouponBtn').onclick=addCoupon;$('addItineraryBtn').onclick=()=>addItinerary();$('addDocumentBtn').onclick=addDocument;$('editBudgetBtn').onclick=editBudget;$('addExpenseBtn').onclick=addExpense;$('addPackingBtn').onclick=addPacking;
-$('openDestinationMap').onclick=()=>{const t=trip();if(t)window.open(mapUrl(t.destination),'_blank','noopener');};$('searchTransit').onclick=()=>{const t=trip();if(t)window.open(mapUrl(t.destination+' 大眾運輸'),'_blank','noopener');};
+$('openDestinationMap').onclick=()=>{const t=trip();if(t)window.open(mapUrl(t.destination),'_blank','noopener');};
 $('folderSegments').onclick=e=>{const b=e.target.closest('button[data-section]');if(!b)return;state.folder=b.dataset.section;renderFolder();};
 document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.tab));
 $('itineraryDetailClose').onclick=closeItineraryDetail;
