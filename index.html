@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#F5F1E8">
+<meta name="theme-color" content="#F3F1EA">
 <title>MY JOURNEYS｜旅行管理</title>
 <style>
 :root{--forest:#303A35;--cream:#F5F1E8;--paper:#FFFCF6;--gold:#B9A17A;--muted:#77766E;--line:#E8DFD0;--red:#B85C50;--shadow:0 10px 30px #39352b0b}
@@ -136,6 +136,42 @@
 #guideSegments button[data-guide-category="play"].active{background:var(--itinerary-color);color:#FFFCF6;border-color:var(--itinerary-color);box-shadow:none}
 #guideSegments button[data-guide-category="shop"].active{background:var(--shopping-color);color:#FFFCF6;border-color:var(--shopping-color);box-shadow:none}
 @media(max-width:720px){.timeline-entry{grid-template-columns:54px minmax(0,1fr);gap:10px}.timeline-entry:before{left:65px}.timeline-axis:after{right:-15px}.home-flight-card{grid-column:span 12}.flight-point strong{font-size:13px}}
+
+
+/* 莫蘭迪四色系統：墨綠、霧金、灰藍、陶紅 */
+:root{
+  --forest:#536B60;
+  --cream:#F3F1EA;
+  --paper:#FBFAF6;
+  --gold:#B39A6A;
+  --muted:#85877F;
+  --line:#DEDCD2;
+  --red:#A87570;
+  --itinerary-color:#536B60;
+  --transport-color:#536B60;
+  --food-color:#B39A6A;
+  --ticket-color:#71899B;
+  --shopping-color:#A87570;
+  --flight-color:#71899B;
+  --soft:#E9EDE8;
+}
+.btn.primary,.tab.active,.nav-btn.active,.day-pill.active{background:var(--forest);border-color:var(--forest);color:var(--paper)}
+.category-badge.itinerary,.category-badge.transport{background:var(--forest)}
+.category-badge.food{background:var(--gold)}
+.category-badge.ticket{background:var(--ticket-color)}
+.category-badge.shopping{background:var(--red)}
+.flight-direction{background:var(--ticket-color)}
+.itinerary-category.food{background:#F0E9D9;color:#8A744A}
+.itinerary-category.play{background:#E5EBE5;color:#536B60}
+.itinerary-category.shop{background:#F1E5E3;color:#986A65}
+.itinerary-category.transport{background:#E5EBE5;color:#536B60}
+.itinerary-detail-block{padding:14px 15px;margin:10px 0;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:13px;background:#F8F7F1}
+.itinerary-detail-block h4{color:var(--forest);font-size:13px}
+.itinerary-detail-block p{color:#686D67}
+.detail-section-title{font-size:12px;letter-spacing:.08em;color:var(--muted);margin:18px 0 8px}
+.detail-fact-card{background:#F6F4ED;border:1px solid var(--line);border-radius:13px;padding:12px}
+.detail-fact-card strong{display:block;margin-top:5px;color:var(--forest)}
+@media(max-width:720px){.itinerary-detail-block{padding:12px}}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -672,17 +708,45 @@ function migrateLegacyGuideToItinerary(item){
 }
 function itineraryDetailFields(x){
   const d=x.details||{};
-  return [
-    {name:'hours',label:'開放／營業時間（選填）',value:d.hours||'',placeholder:'例如：09:00–17:00'},
-    {name:'price',label:'價格／預算（選填）',value:d.price||'',placeholder:'例如：成人票 7,900 日圓'},
-    {name:'duration',label:'建議停留時間（選填）',value:d.duration||'',placeholder:'例如：2–3 小時'},
+  const category=normalizeGuideCategory(x.category);
+  const common=[
     {name:'website',label:'官方網站／預約連結（選填）',value:d.website||'',full:true,placeholder:'貼上網址即可'},
-    {name:'highlights',label:'必吃／必玩／必逛重點',type:'textarea',value:d.highlights||'',full:true,placeholder:'想看的景點、推薦餐點、必買商品…'},
-    {name:'howTo',label:'詳細攻略／推薦順序',type:'textarea',value:d.howTo||'',full:true,placeholder:'如何安排參觀、排隊技巧、購物路線…'},
-    {name:'transport',label:'交通方式（選填）',type:'textarea',value:d.transport||'',full:true,placeholder:'例如：搭乘 JR 到舞濱站，步行約 5 分鐘'},
-    {name:'notice',label:'注意事項（選填）',type:'textarea',value:d.notice||'',full:true,placeholder:'例如：需要事先預約、入場規定…'},
+    {name:'notice',label:'注意事項（選填）',type:'textarea',value:d.notice||'',full:true,placeholder:'需要事先預約、入場規定、提醒事項…'},
     {name:'note',label:'個人備註（選填）',type:'textarea',value:d.note||'',full:true,placeholder:'只記錄自己需要記得的事'}
   ];
+  const byCategory={
+    food:[
+      {name:'hours',label:'營業時間',value:d.hours||'',placeholder:'例如：11:00–22:00'},
+      {name:'price',label:'價格／預算',value:d.price||'',placeholder:'例如：每人約 1,500 日圓'},
+      {name:'cuisine',label:'料理類型',value:d.cuisine||'',placeholder:'例如：壽司、拉麵、甜點'},
+      {name:'signature',label:'推薦餐點／必點品項',type:'textarea',value:d.signature||d.highlights||'',full:true,placeholder:'想吃的餐點、招牌料理…'},
+      {name:'reservation',label:'訂位方式／預約資訊',type:'textarea',value:d.reservation||d.howTo||'',full:true,placeholder:'是否需要訂位、訂位平台、排隊方式…'}
+    ],
+    play:[
+      {name:'hours',label:'開放時間',value:d.hours||'',placeholder:'例如：09:00–17:00'},
+      {name:'price',label:'門票／價格',value:d.price||'',placeholder:'例如：成人票 7,900 日圓'},
+      {name:'duration',label:'建議停留時間',value:d.duration||'',placeholder:'例如：2–3 小時'},
+      {name:'highlights',label:'必玩／必看重點',type:'textarea',value:d.highlights||'',full:true,placeholder:'想看的景點、設施、表演…'},
+      {name:'howTo',label:'遊玩攻略／推薦順序',type:'textarea',value:d.howTo||'',full:true,placeholder:'入園順序、排隊技巧、推薦路線…'},
+      {name:'reservation',label:'預約／入場資訊',type:'textarea',value:d.reservation||'',full:true,placeholder:'是否需要事先預約、票券使用方式…'}
+    ],
+    shop:[
+      {name:'hours',label:'營業時間',value:d.hours||'',placeholder:'例如：10:00–21:00'},
+      {name:'price',label:'預算／價格',value:d.price||'',placeholder:'例如：預計購物 5,000 日圓'},
+      {name:'mustBuy',label:'必買清單',type:'textarea',value:d.mustBuy||d.highlights||'',full:true,placeholder:'品牌、商品、樓層或想買的品項…'},
+      {name:'taxFree',label:'免稅／退稅資訊',type:'textarea',value:d.taxFree||'',full:true,placeholder:'免稅門檻、退稅櫃台位置…'},
+      {name:'shopNote',label:'購物攻略',type:'textarea',value:d.shopNote||d.howTo||'',full:true,placeholder:'推薦樓層、折扣、購買順序…'}
+    ]
+  };
+  const transport=[
+    {name:'route',label:'交通路線／搭乘方式',type:'textarea',value:d.route||d.transport||'',full:true,placeholder:'例如：搭乘 JR 山手線至新宿站…'},
+    {name:'fromTo',label:'起點與終點',value:d.fromTo||'',full:true,placeholder:'例如：飯店 → 東京車站'},
+    {name:'duration',label:'預估交通時間',value:d.duration||'',placeholder:'例如：約 25 分鐘'},
+    {name:'fare',label:'交通費用',value:d.fare||d.price||'',placeholder:'例如：230 日圓'},
+    {name:'transportNote',label:'搭乘提醒',type:'textarea',value:d.transportNote||d.notice||'',full:true,placeholder:'轉乘月台、末班車、出口資訊…'}
+  ];
+  const specific=category==='food'?byCategory.food:category==='play'?byCategory.play:category==='shop'?byCategory.shop:(String(x.category||'').includes('交通')?transport:byCategory.play);
+  return [...specific,...common];
 }
 function showItineraryDetail(id){
   const t=trip(),x=t?.itinerary.find(v=>v.id===id);if(!x)return;
@@ -691,11 +755,22 @@ function showItineraryDetail(id){
   if(!hadDetails&&x.details&&Object.values(x.details).some(v=>String(v||'').trim()))save();
   const d=x.details||{};
   $('itineraryDetailTitle').textContent=x.title||'行程詳細資訊';
-  const category=normalizeGuideCategory(x.category);
-  const categoryLabel=category==='food'?'吃 FOOD':category==='play'?'玩 PLAY':category==='shop'?'逛 SHOP':(x.category||'行程');
-  const sections=[['景點重點',d.highlights],['詳細攻略／推薦順序',d.howTo],['交通方式',d.transport],['注意事項',d.notice],['個人備註',d.note]]
-    .filter(([,value])=>String(value||'').trim());
-  const facts=[['時間',d.hours],['價格',d.price],['建議停留',d.duration]].filter(([,value])=>String(value||'').trim());
+  const category=String(x.category||'').includes('交通')?'transport':normalizeGuideCategory(x.category);
+  const categoryLabel=category==='transport'?'交通 TRANSPORT':category==='food'?'美食 FOOD':category==='play'?'景點 PLAY':category==='shop'?'購物 SHOP':(x.category||'行程');
+  const detailLabels={
+    hours:'營業／開放時間',price:'價格／預算',duration:'建議停留時間',
+    cuisine:'料理類型',signature:'推薦餐點／必點品項',reservation:'訂位／預約資訊',
+    highlights:'必看／必玩重點',howTo:'攻略／推薦順序',
+    mustBuy:'必買清單',taxFree:'免稅／退稅資訊',shopNote:'購物攻略',
+    route:'交通路線／搭乘方式',transport:'交通方式',fromTo:'起點與終點',
+    fare:'交通費用',transportNote:'搭乘提醒',notice:'注意事項',note:'個人備註'
+  };
+  const facts=['hours','price','duration','cuisine','fromTo','fare']
+    .filter(key=>String(d[key]||'').trim())
+    .map(key=>[detailLabels[key],d[key]]);
+  const sections=Object.entries(d)
+    .filter(([key,value])=>!['hours','price','duration','website','cuisine','fromTo','fare'].includes(key)&&String(value||'').trim())
+    .map(([key,value])=>[detailLabels[key]||key,value]);
   const hasInfo=facts.length||sections.length||d.website;
   $('itineraryDetailContent').innerHTML=`
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
@@ -704,7 +779,7 @@ function showItineraryDetail(id){
     </div>
     ${x.location?`<p class="muted" style="margin:0 0 12px">${esc(x.location)}</p>`:''}
     ${x.note?`<div class="itinerary-detail-block"><h4>行程備註</h4><p>${esc(x.note)}</p></div>`:''}
-    ${facts.length?`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0">${facts.map(([label,value])=>`<div class="card"><small class="muted">${label}</small><strong>${esc(value)}</strong></div>`).join('')}</div>`:''}
+    ${facts.length?`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0">${facts.map(([label,value])=>`<div class="detail-fact-card"><small class="muted">${label}</small><strong>${esc(value)}</strong></div>`).join('')}</div>`:''}
     ${sections.map(([title,value])=>`<div class="itinerary-detail-block"><h4>${title}</h4><p>${esc(value)}</p></div>`).join('')}
     ${d.website?`<div class="actions"><a class="btn small" href="${safeUrl(d.website)}" target="_blank" rel="noopener">官方資訊 ↗</a></div>`:''}
     ${x.location?`<div class="actions"><a class="btn small" href="${mapUrl(x.location)}" target="_blank" rel="noopener">開啟地圖 ↗</a></div>`:''}
