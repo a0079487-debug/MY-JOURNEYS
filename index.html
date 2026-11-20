@@ -518,8 +518,34 @@ const TRANSPORT_SUPABASE_URL='https://ypkuxtqdibdwzcxccjvb.supabase.co';
 const TRANSPORT_SUPABASE_KEY='sb_publishable_S4Km5goUuByA4tBlezxVog_WNcS7hfI';
 const transportSupabase=window.supabase.createClient(TRANSPORT_SUPABASE_URL,TRANSPORT_SUPABASE_KEY);
 const transportLineCache=new Map(),transportPackageCache=new Map(),transportStationCache=new Map();
-const TRANSPORT_SOURCES={tokyo:{code:'JP-TOKYO',label:'東京',lineLabel:'東京路線'},seoul:{code:'KR-SEOUL',label:'首爾',lineLabel:'首爾路線'}};
-function transportSourceLabel(source){return TRANSPORT_SOURCES[source]?.label||'';}
+let transportCatalogCache=null;
+const LEGACY_TRANSPORT_SOURCE_CODES={tokyo:'JP-TOKYO',seoul:'KR-SEOUL'};
+function transportSourceCode(source){return LEGACY_TRANSPORT_SOURCE_CODES[source]||source||'';}
+function transportSourceMeta(source){const code=transportSourceCode(source);return (transportCatalogCache||[]).find(x=>x.code===code)||null;}
+function transportSourceLabel(source){const code=transportSourceCode(source);return transportSourceMeta(source)?.cityName||({tokyo:'東京',seoul:'首爾','JP-TOKYO':'東京','KR-SEOUL':'首爾'}[source]||({ 'JP-TOKYO':'東京','KR-SEOUL':'首爾'}[code])||'');}
+function isKoreanTransportSource(source){return transportSourceMeta(source)?.countryCode==='KR'||transportSourceCode(source)==='KR-SEOUL';}
+function isJapaneseTransportSource(source){return transportSourceMeta(source)?.countryCode==='JP'||transportSourceCode(source)==='JP-TOKYO';}
+async function loadTransportCatalog(force=false){
+  if(transportCatalogCache&&!force)return transportCatalogCache;
+  const {data,error}=await transportSupabase.from('transport_packages')
+    .select('id,code,name_zh,city:transport_cities(name_zh,country:transport_countries(code,name_zh))')
+    .eq('is_active',true).eq('is_published',true);
+  if(error)throw new Error('無法讀取交通城市清單：'+error.message);
+  transportCatalogCache=(data||[]).map(pkg=>({
+    id:pkg.id,code:pkg.code,label:pkg.name_zh||pkg.city?.name_zh||pkg.code,
+    cityName:pkg.city?.name_zh||pkg.name_zh||pkg.code,
+    countryCode:pkg.city?.country?.code||'',countryName:pkg.city?.country?.name_zh||'其他區域'
+  })).sort((a,b)=>a.countryName.localeCompare(b.countryName,'zh-Hant')||a.cityName.localeCompare(b.cityName,'zh-Hant'));
+  return transportCatalogCache;
+}
+function transportSourceOptions(catalog,current='manual'){
+  const groups=new Map();
+  for(const item of catalog){if(!groups.has(item.countryName))groups.set(item.countryName,[]);groups.get(item.countryName).push({value:item.code,label:item.cityName});}
+  const options=[{value:'manual',label:'手動輸入'}];
+  for(const [group,items] of groups)options.push({group:group+'區域',options:items});
+  if(current&&current!=='manual'&&!catalog.some(x=>x.code===transportSourceCode(current)))options.push({value:current,label:transportSourceLabel(current)||'原有交通資料'});
+  return options;
+}
 
 let currentUser=null, authSession=null, realtimeChannel=null, cloudReady=false, saving=false;
 const KEY='my_journeys_website_v1';
@@ -933,7 +959,7 @@ function selectTrip(id){state.activeId=id;state.day=getTodayTripDay(trip());save
 function setDay(n){state.day=n;renderItinerary();}
 async function removeItem(key,id){const t=trip();if(!t)return;if(!confirm('確定要刪除這筆資料嗎？'))return;const target=t[key].find(x=>x.id===id);if(key==='documents'&&target?.attachments?.length){const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).remove(target.attachments.map(a=>a.path));if(error)throw error;}if(key==='coupons'&&target?.imagePath){const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).remove([target.imagePath]);if(error)throw error;}t[key]=t[key].filter(x=>x.id!==id);await save();render();}
 function togglePacking(id,value){const x=trip().packing.find(x=>x.id===id);if(x){x.checked=value;save();renderFolder();}}
-function editTrip(id){const t=state.trips.find(x=>x.id===id);openForm('編輯旅行',[{name:'title',label:'旅行名稱',value:t.title,required:true},{name:'destination',label:'目的地',value:t.destination,required:true},{name:'startDate',label:'出發日期',type:'date',value:t.startDate,required:true},{name:'endDate',label:'回程日期',type:'date',value:t.endDate,required:true},{name:'budget',label:'總預算（NT$）',type:'number',value:t.budget},{name:'transportDataSource',label:'交通資料來源',type:'select',value:t.transportDataSource||'manual',options:[{value:'manual',label:'手動輸入'},{group:'日本區域',options:[{value:'tokyo',label:'東京'}]},{group:'韓國區域',options:[{value:'seoul',label:'首爾'}]}]}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');Object.assign(t,{...v,budget:Number(v.budget||0)});save();render();});}
+async function editTrip(id){const t=state.trips.find(x=>x.id===id);if(!t)return;let catalog=[];try{catalog=await loadTransportCatalog();}catch(e){alert(e.message);return;}const current=transportSourceCode(t.transportDataSource||'manual');openForm('編輯旅行',[{name:'title',label:'旅行名稱',value:t.title,required:true},{name:'destination',label:'目的地',value:t.destination,required:true},{name:'startDate',label:'出發日期',type:'date',value:t.startDate,required:true},{name:'endDate',label:'回程日期',type:'date',value:t.endDate,required:true},{name:'budget',label:'總預算（NT$）',type:'number',value:t.budget},{name:'transportDataSource',label:'交通資料來源',type:'select',value:current,options:transportSourceOptions(catalog,current)}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');Object.assign(t,{...v,transportDataSource:transportSourceCode(v.transportDataSource)||'manual',budget:Number(v.budget||0)});save();render();});}
 async function deleteTrip(id){const t=state.trips.find(x=>x.id===id);if(!t||!confirm(`刪除「${t.title}」及其所有資料？`))return;const {error}=await supabaseClient.from('trips').delete().eq('id',id);if(error){alert('刪除失敗：'+error.message);return;}state.trips=state.trips.filter(x=>x.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;render();}
 function openForm(title,fields,onSave){$('modalTitle').textContent=title;$('modalFields').innerHTML=fields.map(f=>`<div class="field ${f.full?'full':''}"><label>${esc(f.label)}</label>${f.type==='select'?`<select name="${f.name}">${f.options.map(o=>o.group?`<optgroup label="${esc(o.group)}">${o.options.map(item=>`<option value="${esc(item.value)}" ${String(item.value)===String(f.value)?'selected':''}>${esc(item.label)}</option>`).join('')}</optgroup>`:(()=>{const ov=typeof o==='object'?o.value:o,ol=typeof o==='object'?o.label:o;return `<option value="${esc(ov)}" ${String(ov)===String(f.value)?'selected':''}>${esc(ol)}</option>`})()).join('')}</select>`:f.type==='textarea'?`<textarea name="${f.name}" placeholder="${esc(f.placeholder||'')}">${esc(f.value||'')}</textarea>`:f.type==='file'?`<input name="${f.name}" type="file" accept="${esc(f.accept||'*/*')}" ${f.multiple?'multiple':''}>`:`<input name="${f.name}" type="${f.type||'text'}" value="${esc(f.value??'')}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''} ${f.min!==undefined?`min="${f.min}"`:''}>`}</div>`).join('');
 const startDateInput=$('modalFields').querySelector('[name="startDate"]');
@@ -950,11 +976,12 @@ if(startDateInput&&endDateInput){
 }
 $('modalBackdrop').classList.add('open');$('modalForm').onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),data=Object.fromEntries(fd.entries());if(data.startDate&&data.endDate&&data.endDate<data.startDate){alert('回程日期不可早於出發日期');return;}data.attachmentsFile=fd.getAll('attachments').filter(x=>x instanceof File&&x.size>0);data.couponImageFile=fd.get('couponImage');try{await onSave(data);closeModal();}catch(err){console.error(err);alert('操作失敗：'+err.message);}};}
 function closeModal(){$('modalBackdrop').classList.remove('open');}
-function addTrip(){
+async function addTrip(){
+  let transportCatalog=[];try{transportCatalog=await loadTransportCatalog();}catch(e){alert(e.message);return;}
   const sourceOptions=[{value:'',label:'不複製舊行程'} ,...state.trips.map(x=>({value:x.id,label:`${x.title} · ${x.destination}`}))];
-  openForm('新增旅行',[{name:'title',label:'旅行名稱',placeholder:'例如：東京冬日旅行',required:true},{name:'destination',label:'目的地',placeholder:'Tokyo, Japan',required:true},{name:'startDate',label:'出發日期',type:'date',value:new Date().toISOString().slice(0,10),required:true},{name:'endDate',label:'回程日期',type:'date',value:new Date(Date.now()+3*86400000).toISOString().slice(0,10),required:true},{name:'budget',label:'總預算（NT$，選填）',type:'number',value:0},{name:'transportDataSource',label:'交通路線資料來源',type:'select',value:'manual',options:[{value:'manual',label:'不使用資料庫（自行輸入交通資訊）'},{value:'tokyo',label:'使用東京交通資料庫（多業者鐵道路線）'},{value:'seoul',label:'使用首爾交通資料庫（地鐵與區域鐵道路線）'}]},{name:'copyFromTripId',label:'從之前的旅行挑選景點（選填）',type:'select',options:sourceOptions,value:''}],async v=>{
+  openForm('新增旅行',[{name:'title',label:'旅行名稱',placeholder:'例如：東京冬日旅行',required:true},{name:'destination',label:'目的地',placeholder:'Tokyo, Japan',required:true},{name:'startDate',label:'出發日期',type:'date',value:new Date().toISOString().slice(0,10),required:true},{name:'endDate',label:'回程日期',type:'date',value:new Date(Date.now()+3*86400000).toISOString().slice(0,10),required:true},{name:'budget',label:'總預算（NT$，選填）',type:'number',value:0},{name:'transportDataSource',label:'交通資料來源',type:'select',value:'manual',options:transportSourceOptions(transportCatalog)},{name:'copyFromTripId',label:'從之前的旅行挑選景點（選填）',type:'select',options:sourceOptions,value:''}],async v=>{
     if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');
-    const t=blankTrip({...v,budget:Number(v.budget||0),_ownerId:currentUser.id,_isNew:true,id:crypto.randomUUID()});delete t.copyFromTripId;
+    const t=blankTrip({...v,transportDataSource:transportSourceCode(v.transportDataSource)||'manual',budget:Number(v.budget||0),_ownerId:currentUser.id,_isNew:true,id:crypto.randomUUID()});delete t.copyFromTripId;
     const targetId=t.id,sourceId=v.copyFromTripId||'';
     state.trips.push(t);state.activeId=targetId;state.day=getTodayTripDay(t);const saved=await save();render();
     if(!saved)return;
@@ -1058,23 +1085,24 @@ const itineraryInfoLabels={"transport": "交通", "play": "遊玩", "food": "美
 const itineraryInfoIconKinds={"transport":"交通","play":"景點","food":"餐廳","shop":"購物"};
 function itineraryInfoIcon(kind){return sketchIcon(itineraryInfoIconKinds[kind]||'景點');}
 async function loadTransportLines(source='tokyo'){
-  const config=TRANSPORT_SOURCES[source];
-  if(!config)throw new Error('此旅行尚未選擇可用的交通資料庫。');
-  if(transportLineCache.has(source))return transportLineCache.get(source);
-  let pkg=transportPackageCache.get(source);
+  await loadTransportCatalog().catch(()=>[]);
+  const code=transportSourceCode(source);
+  if(!code||code==='manual')throw new Error('此旅行尚未選擇可用的交通資料庫。');
+  if(transportLineCache.has(code))return transportLineCache.get(code);
+  let pkg=transportPackageCache.get(code);
   if(!pkg){
-    const {data,error}=await transportSupabase.from('transport_packages').select('id').eq('code',config.code).eq('is_active',true).single();
-    if(error)throw new Error(`無法讀取${config.label}交通資料包：${error.message}`);
-    pkg=data;transportPackageCache.set(source,pkg);
+    const {data,error}=await transportSupabase.from('transport_packages').select('id,code,name_zh').eq('code',code).eq('is_active',true).eq('is_published',true).single();
+    if(error)throw new Error(`無法讀取${transportSourceLabel(source)||code}交通資料包：${error.message}`);
+    pkg=data;transportPackageCache.set(code,pkg);
   }
   const {data,error}=await transportSupabase.from('transport_lines').select('id,code,name_zh,name_ja,name_ko,color_hex,sort_order,line_type,operator:transport_operators(name_zh,name_ja,code)').eq('package_id',pkg.id).eq('is_active',true).order('sort_order',{ascending:true});
-  if(error)throw new Error(`無法讀取${config.label}交通路線：${error.message}`);
+  if(error)throw new Error(`無法讀取${transportSourceLabel(source)||code}交通路線：${error.message}`);
   const lines=(data||[]).slice().sort((a,b)=>{
     const ga=String(a.operator?.code||a.operator?.name_zh||'ZZZ').toUpperCase();
     const gb=String(b.operator?.code||b.operator?.name_zh||'ZZZ').toUpperCase();
     return ga.localeCompare(gb,'zh-Hant')||(Number(a.sort_order)||0)-(Number(b.sort_order)||0)||String(a.code||'').localeCompare(String(b.code||''));
   });
-  transportLineCache.set(source,lines);return lines;
+  transportLineCache.set(code,lines);return lines;
 }
 async function loadTransportLineStations(lineId,source='tokyo'){
   const cacheKey=`${source}:${lineId}`;
@@ -1091,9 +1119,9 @@ async function loadTransportLineStations(lineId,source='tokyo'){
 }
 // 舊版函式名稱保留，避免其他既有程式碼引用時中斷。
 async function loadTokyoTransportLines(){return loadTransportLines('tokyo');}
-async function loadTokyoLineStations(lineId){return loadTransportLineStations(lineId,'tokyo');}
+async function loadTokyoLineStations(lineId){return loadTransportLineStations(lineId,'JP-TOKYO');}
 
-function transportDisplayName(item,source='tokyo'){if(!item)return '';const zh=item.name_zh||item.code||'未命名';const extra=source==='seoul'?item.name_ko:source==='tokyo'?item.name_ja:'';return extra?`${zh}（${extra}）`:zh;}
+function transportDisplayName(item,source='tokyo'){if(!item)return '';const zh=item.name_zh||item.code||'未命名';const extra=isKoreanTransportSource(source)?item.name_ko:isJapaneseTransportSource(source)?item.name_ja:'';return extra?`${zh}（${extra}）`:zh;}
 function transportStationLabel(station,source='tokyo'){return transportDisplayName(station,source)||station.code||'未命名車站';}
 function renderTransportStationOptions(stations,selected='',source='tokyo'){
   return '<option value="">請選擇車站</option>'+stations.map(st=>`<option value="${esc(st.id)}" ${st.id===selected?'selected':''}>${esc(transportStationLabel(st,source))}</option>`).join('');
@@ -1102,21 +1130,21 @@ async function renderTransportCategory(id){
   const t=trip(),x=t?.itinerary.find(v=>v.id===id);if(!x)return;
   $('itineraryDetailTitle').textContent='交通資訊';
   const entries=getItineraryEntries(x,'transport');
-  const dataSource=TRANSPORT_SOURCES[t.transportDataSource]?t.transportDataSource:'manual';
+  const dataSource=t.transportDataSource&&t.transportDataSource!=='manual'?transportSourceCode(t.transportDataSource):'manual';
   const useDatabase=dataSource!=='manual';
   const sourceLabel=transportSourceLabel(dataSource);
   let lines=[];
   if(useDatabase){try{lines=await loadTransportLines(dataSource);}catch(e){$('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderItineraryCategoryHome('${id}')">← 返回分類</button></div><div class="empty">${esc(e.message)}</div>`;return;}}
   const cards=entries.map((entry,index)=>{
-    const line=useDatabase&&(!entry.dataSource||entry.dataSource===dataSource)?lines.find(v=>v.id===entry.lineId):null;
+    const line=useDatabase&&(!entry.dataSource||transportSourceCode(entry.dataSource)===dataSource)?lines.find(v=>v.id===entry.lineId):null;
     const color=entry.lineColor||line?.color_hex||'#718078';
-    const lineName=(dataSource==='seoul'?(entry.lineNameZh&&entry.lineNameKo?`${entry.lineNameZh}（${entry.lineNameKo}）`:line?transportDisplayName(line,dataSource):entry.lineNameZh):(entry.lineNameZh&&entry.lineNameJa?`${entry.lineNameZh}（${entry.lineNameJa}）`:line?transportDisplayName(line,dataSource):entry.lineNameZh))||entry.transportModeLabel||entry.route||entry.customLineName||'其他交通';
+    const lineName=(isKoreanTransportSource(dataSource)?(entry.lineNameZh&&entry.lineNameKo?`${entry.lineNameZh}（${entry.lineNameKo}）`:line?transportDisplayName(line,dataSource):entry.lineNameZh):(entry.lineNameZh&&entry.lineNameJa?`${entry.lineNameZh}（${entry.lineNameJa}）`:line?transportDisplayName(line,dataSource):entry.lineNameZh))||entry.transportModeLabel||entry.route||entry.customLineName||'其他交通';
     const mode=entry.transportMode||'train';
     const modeIcon=({walk:'步行',bus:'公車',train:'火車',metro:'交通',taxi:'計程車',bike:'自行車',ferry:'渡輪',plane:'飛機',car:'開車',other:'其他'})[mode]||'交通';
     const modeColor=({walk:'#6B8B72',bus:'#5C86A8',train:'#718078',metro:color,taxi:'#B18A4A',bike:'#6B8B72',ferry:'#5C86A8',plane:'#718078',car:'#8A7665',other:'#718078'})[mode]||color;
     const displayColor=entry.lineColor||line?.color_hex||modeColor;
-    const from=(entry.fromStationNameZh&&((dataSource==='seoul'&&entry.fromStationNameKo)||(dataSource==='tokyo'&&entry.fromStationNameJa))?`${entry.fromStationNameZh}（${dataSource==='seoul'?entry.fromStationNameKo:entry.fromStationNameJa}）`:entry.fromStationNameZh)||entry.fromStation||entry.from||'';
-    const to=(entry.toStationNameZh&&((dataSource==='seoul'&&entry.toStationNameKo)||(dataSource==='tokyo'&&entry.toStationNameJa))?`${entry.toStationNameZh}（${dataSource==='seoul'?entry.toStationNameKo:entry.toStationNameJa}）`:entry.toStationNameZh)||entry.toStation||entry.to||'';
+    const from=(entry.fromStationNameZh&&((isKoreanTransportSource(dataSource)&&entry.fromStationNameKo)||(isJapaneseTransportSource(dataSource)&&entry.fromStationNameJa))?`${entry.fromStationNameZh}（${isKoreanTransportSource(dataSource)?entry.fromStationNameKo:entry.fromStationNameJa}）`:entry.fromStationNameZh)||entry.fromStation||entry.from||'';
+    const to=(entry.toStationNameZh&&((isKoreanTransportSource(dataSource)&&entry.toStationNameKo)||(isJapaneseTransportSource(dataSource)&&entry.toStationNameJa))?`${entry.toStationNameZh}（${isKoreanTransportSource(dataSource)?entry.toStationNameKo:entry.toStationNameJa}）`:entry.toStationNameZh)||entry.toStation||entry.to||'';
     const pair=(from||to)?`<div class="transport-station-pair">${from?`<div class="transport-station-row"><small>起點</small><i class="transport-station-pin"></i><strong>${esc(from)}</strong></div>`:''}${to?`<div class="transport-station-row"><small>終點</small><i class="transport-station-pin"></i><strong>${esc(to)}</strong></div>`:''}</div>`:'';
     const title=entry.fromTo||entry.name||[from,to].filter(Boolean).join(' → ')||lineName;
     const modeLabel=useDatabase&&entry.lineCode?`${lineName} · ${entry.lineCode}`:`${lineName}`;
@@ -1132,8 +1160,8 @@ async function openTransportEntryForm(id,entryId='',forceManual=false){
   const t=trip(),x=t?.itinerary.find(v=>v.id===id);if(!x)return;
   const entries=getItineraryEntries(x,'transport');
   const old=entryId?entries.find(v=>v.id===entryId):null;
-  const dataSource=TRANSPORT_SOURCES[t.transportDataSource]?t.transportDataSource:'manual';
-  const useDatabase=dataSource!=='manual'&&!forceManual&&(!old||old.dataSource===dataSource||(!old?.dataSource&&old?.lineId));
+  const dataSource=t.transportDataSource&&t.transportDataSource!=='manual'?transportSourceCode(t.transportDataSource):'manual';
+  const useDatabase=dataSource!=='manual'&&!forceManual&&(!old||transportSourceCode(old.dataSource)===dataSource||(!old?.dataSource&&old?.lineId));
   const sourceLabel=transportSourceLabel(dataSource);
   if(!useDatabase){
     $('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderTransportCategory('${id}')">← 返回交通資訊</button><span class="muted">${old?'編輯搭乘區間':'新增搭乘區間'}</span></div><p class="itinerary-info-intro">可選擇步行、公車、計程車或自駕；若使用其他方式，可選「其他」自行輸入。起點與終點可依實際地點填寫。</p><form class="transport-form" id="manualTransportForm"><div class="transport-form-grid"><div class="field full"><label for="manualTransportMode">交通方式（請選擇）</label><select id="manualTransportMode" required><option value="walk" ${old?.transportMode==='walk'?'selected':''}>步行</option><option value="bus" ${old?.transportMode==='bus'?'selected':''}>公車</option><option value="taxi" ${old?.transportMode==='taxi'?'selected':''}>計程車</option><option value="car" ${old?.transportMode==='car'?'selected':''}>自駕</option><option value="other" ${old?.transportMode==='other'?'selected':''}>其他</option></select></div><div class="field full transport-other-field ${old?.transportMode==='other'?'visible':''}" id="manualTransportOtherWrap"><label for="manualTransportOther">自訂交通方式</label><input id="manualTransportOther" value="${esc(old?.transportMode==='other'?(old?.customTransportMode||old?.transportModeLabel||''):'')}" placeholder="例如：渡輪、電車、租車接駁"></div><div class="field"><label for="manualTransportFrom">起點</label><input id="manualTransportFrom" required value="${esc(old?.fromStation||old?.fromStationNameZh||'')}" placeholder="例如：明洞站"></div><div class="field"><label for="manualTransportTo">終點</label><input id="manualTransportTo" required value="${esc(old?.toStation||old?.toStationNameZh||'')}" placeholder="例如：弘大入口站"></div><div class="field"><label for="manualTransportDuration">預估交通時間（選填）</label><input id="manualTransportDuration" value="${esc(old?.duration||'')}" placeholder="例如：約 20 分鐘"></div><div class="field"><label for="manualTransportFare">交通費用（選填）</label><input id="manualTransportFare" value="${esc(old?.fare||'')}" placeholder="例如：1,400 韓元"></div><div class="field full"><label for="manualTransportNote">搭乘備註（選填）</label><textarea id="manualTransportNote" rows="2" placeholder="轉乘、月台、出口或其他提醒">${esc(old?.transportNote||'')}</textarea></div></div><div class="transport-form-actions"><button class="btn" type="button" id="manualTransportCancel">取消</button><button class="btn primary" type="submit">儲存交通資訊</button></div></form>`;
