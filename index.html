@@ -339,6 +339,13 @@
 .transport-timeline-item:last-child .transport-timeline-rail:before{bottom:0;height:auto}
 .transport-timeline-node{position:relative;z-index:1;width:15px;height:15px;margin-top:2px;border-radius:50%;background:var(--paper);border:4px solid var(--transport-line-color,#718078);box-shadow:0 0 0 3px var(--cream)}
 .transport-timeline-card{min-width:0;background:#fffefa;border:1px solid var(--line);border-radius:16px;padding:14px 15px}
+/* 步行是移動方式的切換，不套用鐵道路線的圖示與色條 */
+.transport-timeline-item.is-walking .transport-timeline-rail:before{background:repeating-linear-gradient(to bottom,var(--transport-line-color,#6B8B72) 0 7px,transparent 7px 13px);width:4px;opacity:.9}
+.transport-timeline-item.is-walking .transport-timeline-node{border-radius:5px;transform:rotate(45deg);border-width:3px;box-shadow:0 0 0 3px #edf2ec}
+.transport-timeline-item.is-walking .transport-timeline-card{background:#F3F6F1;border-color:#DCE5DA}
+.transport-walking-label{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#E3EBE1;color:#49634E;font-size:11px;font-weight:700;letter-spacing:.08em}
+.transport-walking-caption{margin-left:8px;color:#718078;font-size:11px}
+
 .transport-timeline-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .transport-timeline-title{font-size:15px;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
 .transport-line-label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px;margin-top:5px}
@@ -540,6 +547,7 @@ const sketchIcon=(kind)=>{
 };
 
 const transportPictogram=(mode)=>{
+ if(mode==='walk') return '';
  const shapes={
   // 以足印取代原本過於生硬的人形線稿，縮小尺寸時仍清楚易辨
   walk:'<path d="M10.2 5.1c2.4-.7 4.5 1.8 4.6 5.2.1 3.1-1.2 5.7-3.2 6.2-2.2.5-4.1-2.2-4.2-5.4-.1-2.8.8-5.4 2.8-6Z"/><path d="M22.1 15.8c2.4-.7 4.5 1.8 4.6 5.2.1 3.1-1.2 5.7-3.2 6.2-2.2.5-4.1-2.2-4.2-5.4-.1-2.8.8-5.4 2.8-6Z"/><path d="M7.1 4.2 6.2 5.5m2.3-2.2-.2 1.5m13.7 9.6-.9 1.3m2.3-2.2-.2 1.5"/>',
@@ -1095,7 +1103,9 @@ async function renderTransportCategory(id){
     const pair=(from||to)?`<div class="transport-station-pair">${from?`<div class="transport-station-row"><small>起點</small><i class="transport-station-pin"></i><strong>${esc(from)}</strong></div>`:''}${to?`<div class="transport-station-row"><small>終點</small><i class="transport-station-pin"></i><strong>${esc(to)}</strong></div>`:''}</div>`:'';
     const title=entry.fromTo||entry.name||[from,to].filter(Boolean).join(' → ')||lineName;
     const modeLabel=useTokyo&&entry.lineCode?`${entry.operatorNameZh||line?.operator?.name_zh||'東京鐵道'} · ${lineName} · ${entry.lineCode}`:`${lineName}`;
-    return `<div class="transport-timeline-item" style="--transport-line-color:${esc(displayColor)}"><div class="transport-timeline-rail"><i class="transport-timeline-node"></i></div><article class="transport-timeline-card"><div class="transport-timeline-top"><div><div class="transport-timeline-title">${esc(title)}</div><div class="transport-line-label"><i class="transport-line-swatch"></i><span class="transport-mode-icon">${transportPictogram(['walk','bus','train','metro','taxi','car'].includes(mode)?mode:'other')}${esc(modeLabel)}</span></div></div><div class="itinerary-entry-actions"><button type="button" onclick="openTransportEntryForm('${id}','${entry.id}')">編輯</button><button type="button" onclick="deleteItineraryEntry('${id}','transport','${entry.id}')">刪除</button></div></div>${pair}<div class="transport-timeline-meta">${entry.transportService?`<span>${esc(entry.transportService)}</span>`:''}${entry.duration?`<span>◷ ${esc(entry.duration)}</span>`:''}${entry.fare?`<span>費用 ${esc(entry.fare)}</span>`:''}</div>${entry.transportNote?`<div class="transport-timeline-note">${esc(entry.transportNote)}</div>`:''}</article></div>`;
+    const walking=mode==='walk';
+    const modePresentation=walking?`<div class="transport-line-label"><span class="transport-walking-label">步行路段</span><span class="transport-walking-caption">以步行方式移動</span></div>`:`<div class="transport-line-label"><i class="transport-line-swatch"></i><span class="transport-mode-icon">${transportPictogram(['bus','train','metro','taxi','car'].includes(mode)?mode:'other')}${esc(modeLabel)}</span></div>`;
+    return `<div class="transport-timeline-item ${walking?'is-walking':''}" style="--transport-line-color:${esc(walking?'#6B8B72':displayColor)}"><div class="transport-timeline-rail"><i class="transport-timeline-node"></i></div><article class="transport-timeline-card"><div class="transport-timeline-top"><div><div class="transport-timeline-title">${esc(title)}</div>${modePresentation}</div><div class="itinerary-entry-actions"><button type="button" onclick="openTransportEntryForm('${id}','${entry.id}')">編輯</button><button type="button" onclick="deleteItineraryEntry('${id}','transport','${entry.id}')">刪除</button></div></div>${pair}<div class="transport-timeline-meta">${entry.transportService?`<span>${esc(entry.transportService)}</span>`:''}${entry.duration?`<span>◷ ${esc(entry.duration)}</span>`:''}${entry.fare?`<span>費用 ${esc(entry.fare)}</span>`:''}</div>${entry.transportNote?`<div class="transport-timeline-note">${esc(entry.transportNote)}</div>`:''}</article></div>`;
   }).join('');
   const modeText=useTokyo?'目前使用東京交通資料庫，可選擇已建置的東京鐵道路線；其他國家或城市不會套用東京路線。':'目前未使用交通資料庫，可自行輸入任何國家、城市或交通方式。';
   $('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderItineraryCategoryHome('${id}')">← 返回分類</button><span class="muted">${entries.length} 筆搭乘區間</span></div><p class="itinerary-info-intro">${modeText} 每一段交通會以獨立的線狀時間軸呈現，轉乘時可新增下一段。</p>${entries.length?`<div class="transport-timeline">${cards}</div>`:'<div class="empty">目前還沒有交通資訊，點下方按鈕新增第一段搭乘區間。</div>'}<div class="itinerary-category-add"><button class="btn primary" type="button" onclick="openTransportEntryForm('${id}')">＋ ${useTokyo?'新增東京鐵道路線':'新增交通區間'}</button>${useTokyo?`<button class="btn transport-secondary-add" type="button" onclick="openTransportEntryForm('${id}','',true)">＋ 其他交通方式</button>`:''}</div>`;
