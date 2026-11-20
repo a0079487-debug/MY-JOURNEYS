@@ -517,8 +517,9 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 const TRANSPORT_SUPABASE_URL='https://ypkuxtqdibdwzcxccjvb.supabase.co';
 const TRANSPORT_SUPABASE_KEY='sb_publishable_S4Km5goUuByA4tBlezxVog_WNcS7hfI';
 const transportSupabase=window.supabase.createClient(TRANSPORT_SUPABASE_URL,TRANSPORT_SUPABASE_KEY);
-let tokyoTransportLines=null,tokyoTransportPackageId=null;
-const tokyoStationCache=new Map();
+const transportLineCache=new Map(),transportPackageCache=new Map(),transportStationCache=new Map();
+const TRANSPORT_SOURCES={tokyo:{code:'JP-TOKYO',label:'東京',lineLabel:'東京路線'},seoul:{code:'KR-SEOUL',label:'首爾',lineLabel:'首爾路線'}};
+function transportSourceLabel(source){return TRANSPORT_SOURCES[source]?.label||'';}
 
 let currentUser=null, authSession=null, realtimeChannel=null, cloudReady=false, saving=false;
 const KEY='my_journeys_website_v1';
@@ -932,7 +933,7 @@ function selectTrip(id){state.activeId=id;state.day=getTodayTripDay(trip());save
 function setDay(n){state.day=n;renderItinerary();}
 async function removeItem(key,id){const t=trip();if(!t)return;if(!confirm('確定要刪除這筆資料嗎？'))return;const target=t[key].find(x=>x.id===id);if(key==='documents'&&target?.attachments?.length){const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).remove(target.attachments.map(a=>a.path));if(error)throw error;}if(key==='coupons'&&target?.imagePath){const {error}=await supabaseClient.storage.from(STORAGE_BUCKET).remove([target.imagePath]);if(error)throw error;}t[key]=t[key].filter(x=>x.id!==id);await save();render();}
 function togglePacking(id,value){const x=trip().packing.find(x=>x.id===id);if(x){x.checked=value;save();renderFolder();}}
-function editTrip(id){const t=state.trips.find(x=>x.id===id);openForm('編輯旅行',[{name:'title',label:'旅行名稱',value:t.title,required:true},{name:'destination',label:'目的地',value:t.destination,required:true},{name:'startDate',label:'出發日期',type:'date',value:t.startDate,required:true},{name:'endDate',label:'回程日期',type:'date',value:t.endDate,required:true},{name:'budget',label:'總預算（NT$）',type:'number',value:t.budget},{name:'transportDataSource',label:'交通路線資料來源',type:'select',value:t.transportDataSource||'manual',options:[{value:'manual',label:'不使用資料庫（自行輸入交通資訊）'},{value:'tokyo',label:'使用東京交通資料庫（多業者鐵道路線）'}]}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');Object.assign(t,{...v,budget:Number(v.budget||0)});save();render();});}
+function editTrip(id){const t=state.trips.find(x=>x.id===id);openForm('編輯旅行',[{name:'title',label:'旅行名稱',value:t.title,required:true},{name:'destination',label:'目的地',value:t.destination,required:true},{name:'startDate',label:'出發日期',type:'date',value:t.startDate,required:true},{name:'endDate',label:'回程日期',type:'date',value:t.endDate,required:true},{name:'budget',label:'總預算（NT$）',type:'number',value:t.budget},{name:'transportDataSource',label:'交通路線資料來源',type:'select',value:t.transportDataSource||'manual',options:[{value:'manual',label:'不使用資料庫（自行輸入交通資訊）'},{value:'tokyo',label:'使用東京交通資料庫（多業者鐵道路線）'},{value:'seoul',label:'使用首爾交通資料庫（地鐵與區域鐵道路線）'}]}],v=>{if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');Object.assign(t,{...v,budget:Number(v.budget||0)});save();render();});}
 async function deleteTrip(id){const t=state.trips.find(x=>x.id===id);if(!t||!confirm(`刪除「${t.title}」及其所有資料？`))return;const {error}=await supabaseClient.from('trips').delete().eq('id',id);if(error){alert('刪除失敗：'+error.message);return;}state.trips=state.trips.filter(x=>x.id!==id);if(state.activeId===id)state.activeId=state.trips[0]?.id||null;render();}
 function openForm(title,fields,onSave){$('modalTitle').textContent=title;$('modalFields').innerHTML=fields.map(f=>`<div class="field ${f.full?'full':''}"><label>${esc(f.label)}</label>${f.type==='select'?`<select name="${f.name}">${f.options.map(o=>{const ov=typeof o==='object'?o.value:o,ol=typeof o==='object'?o.label:o;return `<option value="${esc(ov)}" ${String(ov)===String(f.value)?'selected':''}>${esc(ol)}</option>`}).join('')}</select>`:f.type==='textarea'?`<textarea name="${f.name}" placeholder="${esc(f.placeholder||'')}">${esc(f.value||'')}</textarea>`:f.type==='file'?`<input name="${f.name}" type="file" accept="${esc(f.accept||'*/*')}" ${f.multiple?'multiple':''}>`:`<input name="${f.name}" type="${f.type||'text'}" value="${esc(f.value??'')}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''} ${f.min!==undefined?`min="${f.min}"`:''}>`}</div>`).join('');
 const startDateInput=$('modalFields').querySelector('[name="startDate"]');
@@ -951,7 +952,7 @@ $('modalBackdrop').classList.add('open');$('modalForm').onsubmit=async e=>{e.pre
 function closeModal(){$('modalBackdrop').classList.remove('open');}
 function addTrip(){
   const sourceOptions=[{value:'',label:'不複製舊行程'} ,...state.trips.map(x=>({value:x.id,label:`${x.title} · ${x.destination}`}))];
-  openForm('新增旅行',[{name:'title',label:'旅行名稱',placeholder:'例如：東京冬日旅行',required:true},{name:'destination',label:'目的地',placeholder:'Tokyo, Japan',required:true},{name:'startDate',label:'出發日期',type:'date',value:new Date().toISOString().slice(0,10),required:true},{name:'endDate',label:'回程日期',type:'date',value:new Date(Date.now()+3*86400000).toISOString().slice(0,10),required:true},{name:'budget',label:'總預算（NT$，選填）',type:'number',value:0},{name:'transportDataSource',label:'交通路線資料來源',type:'select',value:'manual',options:[{value:'manual',label:'不使用資料庫（自行輸入交通資訊）'},{value:'tokyo',label:'使用東京交通資料庫（多業者鐵道路線）'}]},{name:'copyFromTripId',label:'從之前的旅行挑選景點（選填）',type:'select',options:sourceOptions,value:''}],async v=>{
+  openForm('新增旅行',[{name:'title',label:'旅行名稱',placeholder:'例如：東京冬日旅行',required:true},{name:'destination',label:'目的地',placeholder:'Tokyo, Japan',required:true},{name:'startDate',label:'出發日期',type:'date',value:new Date().toISOString().slice(0,10),required:true},{name:'endDate',label:'回程日期',type:'date',value:new Date(Date.now()+3*86400000).toISOString().slice(0,10),required:true},{name:'budget',label:'總預算（NT$，選填）',type:'number',value:0},{name:'transportDataSource',label:'交通路線資料來源',type:'select',value:'manual',options:[{value:'manual',label:'不使用資料庫（自行輸入交通資訊）'},{value:'tokyo',label:'使用東京交通資料庫（多業者鐵道路線）'},{value:'seoul',label:'使用首爾交通資料庫（地鐵與區域鐵道路線）'}]},{name:'copyFromTripId',label:'從之前的旅行挑選景點（選填）',type:'select',options:sourceOptions,value:''}],async v=>{
     if(v.endDate<v.startDate)return alert('回程日期不可早於出發日期');
     const t=blankTrip({...v,budget:Number(v.budget||0),_ownerId:currentUser.id,_isNew:true,id:crypto.randomUUID()});delete t.copyFromTripId;
     const targetId=t.id,sourceId=v.copyFromTripId||'';
@@ -1056,34 +1057,42 @@ const itineraryInfoFields={"transport": [["route", "搭乘方式", "例如：JR 
 const itineraryInfoLabels={"transport": "交通", "play": "遊玩", "food": "美食", "shop": "購物"};
 const itineraryInfoIconKinds={"transport":"交通","play":"景點","food":"餐廳","shop":"購物"};
 function itineraryInfoIcon(kind){return sketchIcon(itineraryInfoIconKinds[kind]||'景點');}
-async function loadTokyoTransportLines(){
-  if(tokyoTransportLines)return tokyoTransportLines;
-  const {data:pkg,error:pkgError}=await transportSupabase.from('transport_packages').select('id').eq('code','JP-TOKYO').eq('is_active',true).single();
-  if(pkgError)throw new Error('無法讀取東京交通資料包：'+pkgError.message);
-  tokyoTransportPackageId=pkg.id;
+async function loadTransportLines(source='tokyo'){
+  const config=TRANSPORT_SOURCES[source];
+  if(!config)throw new Error('此旅行尚未選擇可用的交通資料庫。');
+  if(transportLineCache.has(source))return transportLineCache.get(source);
+  let pkg=transportPackageCache.get(source);
+  if(!pkg){
+    const {data,error}=await transportSupabase.from('transport_packages').select('id').eq('code',config.code).eq('is_active',true).single();
+    if(error)throw new Error(`無法讀取${config.label}交通資料包：${error.message}`);
+    pkg=data;transportPackageCache.set(source,pkg);
+  }
   const {data,error}=await transportSupabase.from('transport_lines').select('id,code,name_zh,name_ja,color_hex,sort_order,line_type,operator:transport_operators(name_zh,name_ja,code)').eq('package_id',pkg.id).eq('is_active',true).order('sort_order',{ascending:true});
-  if(error)throw new Error('無法讀取東京交通路線：'+error.message);
-  // 依業者代碼分組排序，讓同一類型路線相鄰；選單本身不顯示業者名稱。
-  tokyoTransportLines=(data||[]).slice().sort((a,b)=>{
-    const groupA=String(a.operator?.code||a.operator?.name_zh||'ZZZ').toUpperCase();
-    const groupB=String(b.operator?.code||b.operator?.name_zh||'ZZZ').toUpperCase();
-    return groupA.localeCompare(groupB,'zh-Hant') || (Number(a.sort_order)||0)-(Number(b.sort_order)||0) || String(a.code||'').localeCompare(String(b.code||''));
+  if(error)throw new Error(`無法讀取${config.label}交通路線：${error.message}`);
+  const lines=(data||[]).slice().sort((a,b)=>{
+    const ga=String(a.operator?.code||a.operator?.name_zh||'ZZZ').toUpperCase();
+    const gb=String(b.operator?.code||b.operator?.name_zh||'ZZZ').toUpperCase();
+    return ga.localeCompare(gb,'zh-Hant')||(Number(a.sort_order)||0)-(Number(b.sort_order)||0)||String(a.code||'').localeCompare(String(b.code||''));
   });
-  return tokyoTransportLines;
+  transportLineCache.set(source,lines);return lines;
 }
-async function loadTokyoLineStations(lineId){
-  if(tokyoStationCache.has(lineId))return tokyoStationCache.get(lineId);
+async function loadTransportLineStations(lineId,source='tokyo'){
+  const cacheKey=`${source}:${lineId}`;
+  if(transportStationCache.has(cacheKey))return transportStationCache.get(cacheKey);
   const {data:links,error:linkError}=await transportSupabase.from('transport_line_stations').select('station_id,stop_order,station_code_on_line').eq('line_id',lineId).order('stop_order',{ascending:true});
   if(linkError)throw new Error('無法讀取路線車站順序：'+linkError.message);
   const ids=(links||[]).map(x=>x.station_id);
-  if(!ids.length){tokyoStationCache.set(lineId,[]);return [];}
-  const {data:stations,error:stationError}=await transportSupabase.from('transport_stations').select('id,code,name_zh,name_ja').in('id',ids).eq('is_active',true);
+  if(!ids.length){transportStationCache.set(cacheKey,[]);return [];}
+  const {data:stations,error:stationError}=await transportSupabase.from('transport_stations').select('id,code,name_zh').in('id',ids).eq('is_active',true);
   if(stationError)throw new Error('無法讀取車站資料：'+stationError.message);
   const byId=new Map((stations||[]).map(x=>[x.id,x]));
   const ordered=(links||[]).map(link=>({...byId.get(link.station_id),stop_order:link.stop_order,station_code_on_line:link.station_code_on_line})).filter(x=>x.id);
-  tokyoStationCache.set(lineId,ordered);
-  return ordered;
+  transportStationCache.set(cacheKey,ordered);return ordered;
 }
+// 舊版函式名稱保留，避免其他既有程式碼引用時中斷。
+async function loadTokyoTransportLines(){return loadTransportLines('tokyo');}
+async function loadTokyoLineStations(lineId){return loadTransportLineStations(lineId,'tokyo');}
+
 function transportStationLabel(station){return station.name_zh||station.code||'未命名車站';}
 function renderTransportStationOptions(stations,selected=''){
   return '<option value="">請選擇車站</option>'+stations.map(st=>`<option value="${esc(st.id)}" ${st.id===selected?'selected':''}>${esc(transportStationLabel(st))}</option>`).join('');
@@ -1092,11 +1101,13 @@ async function renderTransportCategory(id){
   const t=trip(),x=t?.itinerary.find(v=>v.id===id);if(!x)return;
   $('itineraryDetailTitle').textContent='交通資訊';
   const entries=getItineraryEntries(x,'transport');
-  const useTokyo=t.transportDataSource==='tokyo';
+  const dataSource=TRANSPORT_SOURCES[t.transportDataSource]?t.transportDataSource:'manual';
+  const useDatabase=dataSource!=='manual';
+  const sourceLabel=transportSourceLabel(dataSource);
   let lines=[];
-  if(useTokyo){try{lines=await loadTokyoTransportLines();}catch(e){$('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderItineraryCategoryHome('${id}')">← 返回分類</button></div><div class="empty">${esc(e.message)}</div>`;return;}}
+  if(useDatabase){try{lines=await loadTransportLines(dataSource);}catch(e){$('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderItineraryCategoryHome('${id}')">← 返回分類</button></div><div class="empty">${esc(e.message)}</div>`;return;}}
   const cards=entries.map((entry,index)=>{
-    const line=useTokyo?lines.find(v=>v.id===entry.lineId):null;
+    const line=useDatabase&&(!entry.dataSource||entry.dataSource===dataSource)?lines.find(v=>v.id===entry.lineId):null;
     const color=entry.lineColor||line?.color_hex||'#718078';
     const lineName=entry.lineNameZh||line?.name_zh||entry.transportModeLabel||entry.route||entry.customLineName||'其他交通';
     const mode=entry.transportMode||'train';
@@ -1107,39 +1118,41 @@ async function renderTransportCategory(id){
     const to=entry.toStationNameZh||entry.toStation||entry.to||'';
     const pair=(from||to)?`<div class="transport-station-pair">${from?`<div class="transport-station-row"><small>起點</small><i class="transport-station-pin"></i><strong>${esc(from)}</strong></div>`:''}${to?`<div class="transport-station-row"><small>終點</small><i class="transport-station-pin"></i><strong>${esc(to)}</strong></div>`:''}</div>`:'';
     const title=entry.fromTo||entry.name||[from,to].filter(Boolean).join(' → ')||lineName;
-    const modeLabel=useTokyo&&entry.lineCode?`${lineName} · ${entry.lineCode}`:`${lineName}`;
+    const modeLabel=useDatabase&&entry.lineCode?`${lineName} · ${entry.lineCode}`:`${lineName}`;
     const walking=mode==='walk';
     const modePresentation=walking?`<div class="transport-line-label"><span class="transport-walking-label">步行路段</span><span class="transport-walking-caption">以步行方式移動</span></div>`:`<div class="transport-line-label"><i class="transport-line-swatch"></i><span class="transport-mode-icon">${transportPictogram(['bus','train','metro','taxi','car'].includes(mode)?mode:'other')}${esc(modeLabel)}</span></div>`;
     return `<div class="transport-timeline-item ${walking?'is-walking':''}" style="--transport-line-color:${esc(walking?'#6B8B72':displayColor)}"><div class="transport-timeline-rail"><i class="transport-timeline-node"></i></div><article class="transport-timeline-card"><div class="transport-timeline-top"><div><div class="transport-timeline-title">${esc(title)}</div>${modePresentation}</div><div class="itinerary-entry-actions"><button type="button" onclick="openTransportEntryForm('${id}','${entry.id}')">編輯</button><button type="button" onclick="deleteItineraryEntry('${id}','transport','${entry.id}')">刪除</button></div></div>${pair}<div class="transport-timeline-meta">${entry.transportService?`<span>${esc(entry.transportService)}</span>`:''}${entry.duration?`<span>◷ ${esc(entry.duration)}</span>`:''}${entry.fare?`<span>費用 ${esc(entry.fare)}</span>`:''}</div>${entry.transportNote?`<div class="transport-timeline-note">${esc(entry.transportNote)}</div>`:''}</article></div>`;
   }).join('');
-  const modeText=useTokyo?'目前使用東京交通資料庫，可選擇已建置的東京鐵道路線；其他國家或城市不會套用東京路線。':'目前未使用交通資料庫，可自行輸入任何國家、城市或交通方式。';
-  $('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderItineraryCategoryHome('${id}')">← 返回分類</button><span class="muted">${entries.length} 筆搭乘區間</span></div><p class="itinerary-info-intro">${modeText} 每一段交通會以獨立的線狀時間軸呈現，轉乘時可新增下一段。</p>${entries.length?`<div class="transport-timeline">${cards}</div>`:'<div class="empty">目前還沒有交通資訊，點下方按鈕新增第一段搭乘區間。</div>'}<div class="itinerary-category-add"><button class="btn primary" type="button" onclick="openTransportEntryForm('${id}')">＋ ${useTokyo?'新增東京鐵道路線':'新增交通區間'}</button>${useTokyo?`<button class="btn transport-secondary-add" type="button" onclick="openTransportEntryForm('${id}','',true)">＋ 其他交通方式</button>`:''}</div>`;
+  const modeText=useDatabase?`目前使用${sourceLabel}交通資料庫，可選擇已建置的${sourceLabel}鐵道路線；其他國家或城市不會套用此資料。`:'目前未使用交通資料庫，可自行輸入任何國家、城市或交通方式。';
+  $('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderItineraryCategoryHome('${id}')">← 返回分類</button><span class="muted">${entries.length} 筆搭乘區間</span></div><p class="itinerary-info-intro">${modeText} 每一段交通會以獨立的線狀時間軸呈現，轉乘時可新增下一段。</p>${entries.length?`<div class="transport-timeline">${cards}</div>`:'<div class="empty">目前還沒有交通資訊，點下方按鈕新增第一段搭乘區間。</div>'}<div class="itinerary-category-add"><button class="btn primary" type="button" onclick="openTransportEntryForm('${id}')">＋ ${useDatabase?`新增${sourceLabel}鐵道路線`:'新增交通區間'}</button>${useDatabase?`<button class="btn transport-secondary-add" type="button" onclick="openTransportEntryForm('${id}','',true)">＋ 其他交通方式</button>`:''}</div>`;
   $('itineraryDetailEditInfo').style.display='none';
 }
 async function openTransportEntryForm(id,entryId='',forceManual=false){
   const t=trip(),x=t?.itinerary.find(v=>v.id===id);if(!x)return;
   const entries=getItineraryEntries(x,'transport');
   const old=entryId?entries.find(v=>v.id===entryId):null;
-  const useTokyo=t.transportDataSource==='tokyo'&&!forceManual&&(!old||old.transportMode==='metro'||!!old.lineId);
-  if(!useTokyo){
+  const dataSource=TRANSPORT_SOURCES[t.transportDataSource]?t.transportDataSource:'manual';
+  const useDatabase=dataSource!=='manual'&&!forceManual&&(!old||old.dataSource===dataSource||(!old?.dataSource&&old?.lineId));
+  const sourceLabel=transportSourceLabel(dataSource);
+  if(!useDatabase){
     $('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderTransportCategory('${id}')">← 返回交通資訊</button><span class="muted">${old?'編輯搭乘區間':'新增搭乘區間'}</span></div><p class="itinerary-info-intro">可選擇步行、公車、計程車或自駕；若使用其他方式，可選「其他」自行輸入。起點與終點可依實際地點填寫。</p><form class="transport-form" id="manualTransportForm"><div class="transport-form-grid"><div class="field full"><label for="manualTransportMode">交通方式（請選擇）</label><select id="manualTransportMode" required><option value="walk" ${old?.transportMode==='walk'?'selected':''}>步行</option><option value="bus" ${old?.transportMode==='bus'?'selected':''}>公車</option><option value="taxi" ${old?.transportMode==='taxi'?'selected':''}>計程車</option><option value="car" ${old?.transportMode==='car'?'selected':''}>自駕</option><option value="other" ${old?.transportMode==='other'?'selected':''}>其他</option></select></div><div class="field full transport-other-field ${old?.transportMode==='other'?'visible':''}" id="manualTransportOtherWrap"><label for="manualTransportOther">自訂交通方式</label><input id="manualTransportOther" value="${esc(old?.transportMode==='other'?(old?.customTransportMode||old?.transportModeLabel||''):'')}" placeholder="例如：渡輪、電車、租車接駁"></div><div class="field"><label for="manualTransportFrom">起點</label><input id="manualTransportFrom" required value="${esc(old?.fromStation||old?.fromStationNameZh||'')}" placeholder="例如：明洞站"></div><div class="field"><label for="manualTransportTo">終點</label><input id="manualTransportTo" required value="${esc(old?.toStation||old?.toStationNameZh||'')}" placeholder="例如：弘大入口站"></div><div class="field"><label for="manualTransportDuration">預估交通時間（選填）</label><input id="manualTransportDuration" value="${esc(old?.duration||'')}" placeholder="例如：約 20 分鐘"></div><div class="field"><label for="manualTransportFare">交通費用（選填）</label><input id="manualTransportFare" value="${esc(old?.fare||'')}" placeholder="例如：1,400 韓元"></div><div class="field full"><label for="manualTransportNote">搭乘備註（選填）</label><textarea id="manualTransportNote" rows="2" placeholder="轉乘、月台、出口或其他提醒">${esc(old?.transportNote||'')}</textarea></div></div><div class="transport-form-actions"><button class="btn" type="button" id="manualTransportCancel">取消</button><button class="btn primary" type="submit">儲存交通資訊</button></div></form>`;
     $('manualTransportMode').addEventListener('change',()=>{$('manualTransportOtherWrap').classList.toggle('visible',$('manualTransportMode').value==='other');});
     $('manualTransportCancel').onclick=()=>renderTransportCategory(id);
     $('manualTransportForm').onsubmit=async e=>{e.preventDefault();const transportMode=$('manualTransportMode').value,fromStation=$('manualTransportFrom').value.trim(),toStation=$('manualTransportTo').value.trim(),customTransportMode=$('manualTransportOther').value.trim();if(!transportMode||!fromStation||!toStation)return alert('請選擇交通方式並填寫起點與終點。');if(transportMode==='other'&&!customTransportMode)return alert('請輸入其他交通方式。');const modeLabels={walk:'步行',bus:'公車',taxi:'計程車',car:'自駕',other:customTransportMode};const modeColors={walk:'#6B8B72',bus:'#5C86A8',taxi:'#B18A4A',car:'#8A7665',other:'#718078'};const transportModeLabel=modeLabels[transportMode];const record={id:old?.id||uid(),name:`${fromStation} → ${toStation}`,fromTo:`${fromStation} → ${toStation}`,route:transportModeLabel,customLineName:transportModeLabel,transportMode,transportModeLabel,customTransportMode:transportMode==='other'?customTransportMode:'',fromStation,toStation,lineNameZh:transportModeLabel,lineColor:modeColors[transportMode],duration:$('manualTransportDuration').value.trim(),fare:$('manualTransportFare').value.trim(),transportNote:$('manualTransportNote').value.trim()};if(old)Object.assign(old,record);else entries.push(record);const saved=await save();if(saved===false)return;await renderTransportCategory(id);renderItinerary();};
     return;
   }
-  let lines;try{lines=await loadTokyoTransportLines();}catch(e){alert(e.message);return;}
+  let lines;try{lines=await loadTransportLines(dataSource);}catch(e){alert(e.message);return;}
   const selectedLine=lines.find(v=>v.id===(old?.lineId||''))||lines[0];
   if(!selectedLine){alert('目前沒有可用的東京交通路線資料。');return;}
-  let selectedStations;try{selectedStations=await loadTokyoLineStations(selectedLine.id);}catch(e){alert(e.message);return;}
+  let selectedStations;try{selectedStations=await loadTransportLineStations(selectedLine.id,dataSource);}catch(e){alert(e.message);return;}
   const selectedLineId=old?.lineId||selectedLine.id;
-  if(selectedLine.id!==selectedLineId)selectedStations=await loadTokyoLineStations(selectedLineId);
+  if(selectedLine.id!==selectedLineId)selectedStations=await loadTransportLineStations(selectedLineId,dataSource);
   const lineOptions=lines.map(line=>`<option value="${esc(line.id)}" ${line.id===selectedLineId?'selected':''}>${esc(line.name_zh)}（${esc(line.code)}）</option>`).join('');
-  $('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderTransportCategory('${id}')">← 返回交通資訊</button><span class="muted">${old?'編輯搭乘區間':'新增搭乘區間'}</span></div><form class="transport-form" id="tokyoTransportForm"><div class="transport-form-grid"><div class="field full"><label for="transportLineSelect">東京路線</label><div style="display:flex;align-items:center;gap:9px"><i id="transportLineColorDot" class="transport-line-swatch" style="width:27px;background:${esc(selectedLine.color_hex||'#999')}"></i><select id="transportLineSelect" style="flex:1">${lineOptions}</select></div></div><div class="field"><label for="transportFromSelect">起點車站</label><select id="transportFromSelect">${renderTransportStationOptions(selectedStations,old?.fromStationId||'')}</select></div><div class="field"><label for="transportToSelect">終點車站</label><select id="transportToSelect">${renderTransportStationOptions(selectedStations,old?.toStationId||'')}</select></div><div class="field"><label for="transportService">列車服務（選填）</label><input id="transportService" value="${esc(old?.transportService||'')}" placeholder="例如：Skyliner、Access Express"></div><div class="field"><label for="transportDuration">預估交通時間（選填）</label><input id="transportDuration" value="${esc(old?.duration||'')}" placeholder="例如：約 15 分鐘"></div><div class="field"><label for="transportFare">車資（選填）</label><input id="transportFare" value="${esc(old?.fare||'')}" placeholder="例如：180 日圓"></div><div class="field full"><label for="transportNote">搭乘備註（選填）</label><textarea id="transportNote" rows="2" placeholder="例如：注意出口、月台或轉乘資訊">${esc(old?.transportNote||'')}</textarea></div></div><div class="transport-form-actions"><button class="btn" type="button" id="transportFormCancel">取消</button><button class="btn primary" type="submit">儲存交通資訊</button></div></form>`;
+  $('itineraryDetailContent').innerHTML=`<div class="itinerary-category-toolbar"><button class="btn small" type="button" onclick="renderTransportCategory('${id}')">← 返回交通資訊</button><span class="muted">${old?'編輯搭乘區間':'新增搭乘區間'}</span></div><form class="transport-form" id="tokyoTransportForm"><div class="transport-form-grid"><div class="field full"><label for="transportLineSelect">${esc(sourceLabel)}路線</label><div style="display:flex;align-items:center;gap:9px"><i id="transportLineColorDot" class="transport-line-swatch" style="width:27px;background:${esc(selectedLine.color_hex||'#999')}"></i><select id="transportLineSelect" style="flex:1">${lineOptions}</select></div></div><div class="field"><label for="transportFromSelect">起點車站</label><select id="transportFromSelect">${renderTransportStationOptions(selectedStations,old?.fromStationId||'')}</select></div><div class="field"><label for="transportToSelect">終點車站</label><select id="transportToSelect">${renderTransportStationOptions(selectedStations,old?.toStationId||'')}</select></div><div class="field"><label for="transportService">列車服務（選填）</label><input id="transportService" value="${esc(old?.transportService||'')}" placeholder="例如：Skyliner、Access Express"></div><div class="field"><label for="transportDuration">預估交通時間（選填）</label><input id="transportDuration" value="${esc(old?.duration||'')}" placeholder="例如：約 15 分鐘"></div><div class="field"><label for="transportFare">車資（選填）</label><input id="transportFare" value="${esc(old?.fare||'')}" placeholder="例如：180 日圓"></div><div class="field full"><label for="transportNote">搭乘備註（選填）</label><textarea id="transportNote" rows="2" placeholder="例如：注意出口、月台或轉乘資訊">${esc(old?.transportNote||'')}</textarea></div></div><div class="transport-form-actions"><button class="btn" type="button" id="transportFormCancel">取消</button><button class="btn primary" type="submit">儲存交通資訊</button></div></form>`;
   const lineSelect=$('transportLineSelect'),fromSelect=$('transportFromSelect'),toSelect=$('transportToSelect');
-  lineSelect.addEventListener('change',async()=>{const chosenLine=lines.find(v=>v.id===lineSelect.value);$('transportLineColorDot').style.background=chosenLine?.color_hex||'#999';fromSelect.innerHTML='<option value="">載入車站中…</option>';toSelect.innerHTML='<option value="">載入車站中…</option>';try{const list=await loadTokyoLineStations(lineSelect.value);fromSelect.innerHTML=renderTransportStationOptions(list);toSelect.innerHTML=renderTransportStationOptions(list);}catch(e){fromSelect.innerHTML=toSelect.innerHTML='<option value="">載入失敗</option>';alert(e.message);}});
+  lineSelect.addEventListener('change',async()=>{const chosenLine=lines.find(v=>v.id===lineSelect.value);$('transportLineColorDot').style.background=chosenLine?.color_hex||'#999';fromSelect.innerHTML='<option value="">載入車站中…</option>';toSelect.innerHTML='<option value="">載入車站中…</option>';try{const list=await loadTransportLineStations(lineSelect.value,dataSource);fromSelect.innerHTML=renderTransportStationOptions(list);toSelect.innerHTML=renderTransportStationOptions(list);}catch(e){fromSelect.innerHTML=toSelect.innerHTML='<option value="">載入失敗</option>';alert(e.message);}});
   $('transportFormCancel').onclick=()=>renderTransportCategory(id);
-  $('tokyoTransportForm').onsubmit=async e=>{e.preventDefault();const line=lines.find(v=>v.id===lineSelect.value);if(!line)return alert('請選擇路線。');const stationList=await loadTokyoLineStations(line.id);const from=stationList.find(v=>v.id===fromSelect.value),to=stationList.find(v=>v.id===toSelect.value);if(!from||!to){alert('請選擇路線、起點與終點車站。');return;}if(from.id===to.id){alert('起點與終點不能是同一個車站。');return;}const record={id:old?.id||uid(),name:`${line.name_zh}｜${from.name_zh} → ${to.name_zh}`,route:line.name_zh,fromTo:`${from.name_zh} → ${to.name_zh}`,lineId:line.id,lineCode:line.code,lineNameZh:line.name_zh,transportMode:(line.line_type==='subway'?'metro':'train'),transportModeLabel:line.operator?.name_zh||'鐵道路線',operatorCode:line.operator?.code||'',operatorNameZh:line.operator?.name_zh||'',lineType:line.line_type||'rail',transportService:$('transportService').value.trim(),lineColor:line.color_hex,fromStationId:from.id,fromStationCode:from.code,fromStationNameZh:from.name_zh,fromStationNameJa:from.name_ja,toStationId:to.id,toStationCode:to.code,toStationNameZh:to.name_zh,toStationNameJa:to.name_ja,duration:$('transportDuration').value.trim(),fare:$('transportFare').value.trim(),transportNote:$('transportNote').value.trim()};if(old)Object.assign(old,record);else entries.push(record);const saved=await save();if(saved===false)return;await renderTransportCategory(id);renderItinerary();};
+  $('tokyoTransportForm').onsubmit=async e=>{e.preventDefault();const line=lines.find(v=>v.id===lineSelect.value);if(!line)return alert('請選擇路線。');const stationList=await loadTransportLineStations(line.id,dataSource);const from=stationList.find(v=>v.id===fromSelect.value),to=stationList.find(v=>v.id===toSelect.value);if(!from||!to){alert('請選擇路線、起點與終點車站。');return;}if(from.id===to.id){alert('起點與終點不能是同一個車站。');return;}const record={id:old?.id||uid(),dataSource,name:`${line.name_zh}｜${from.name_zh} → ${to.name_zh}`,route:line.name_zh,fromTo:`${from.name_zh} → ${to.name_zh}`,lineId:line.id,lineCode:line.code,lineNameZh:line.name_zh,transportMode:(line.line_type==='subway'?'metro':'train'),transportModeLabel:line.operator?.name_zh||'鐵道路線',operatorCode:line.operator?.code||'',operatorNameZh:line.operator?.name_zh||'',lineType:line.line_type||'rail',transportService:$('transportService').value.trim(),lineColor:line.color_hex,fromStationId:from.id,fromStationCode:from.code,fromStationNameZh:from.name_zh,fromStationNameJa:from.name_ja,toStationId:to.id,toStationCode:to.code,toStationNameZh:to.name_zh,toStationNameJa:to.name_ja,duration:$('transportDuration').value.trim(),fare:$('transportFare').value.trim(),transportNote:$('transportNote').value.trim()};if(old)Object.assign(old,record);else entries.push(record);const saved=await save();if(saved===false)return;await renderTransportCategory(id);renderItinerary();};
 }
 
 function getItineraryEntries(x,kind){
